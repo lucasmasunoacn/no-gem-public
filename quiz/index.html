@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Knowledge Quiz — LLM Wiki</title>
+<title>Second Brain — Learn</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 /* ── THEME TOKENS ─────────────────────────────────────── */
@@ -42,12 +42,7 @@ header{
   transition:all .15s;white-space:nowrap
 }
 .hbtn:hover{background:var(--brd);color:var(--txt)}
-#gt-wrap{font-size:.78rem}
-/* slim Google Translate widget */
-#gt-wrap .goog-te-combo{
-  background:var(--surf);border:1px solid var(--brd);border-radius:7px;
-  color:var(--m);font-size:.78rem;padding:5px 8px;cursor:pointer
-}
+#translate-btn{text-decoration:none}
 
 /* ── LAYOUT ───────────────────────────────────────────── */
 main{max-width:1020px;margin:0 auto;padding:28px 18px}
@@ -252,10 +247,10 @@ footer{text-align:center;padding:24px;font-size:.72rem;color:var(--m2);
 <body>
 
 <header>
-  <div class="logo">🧠 Knowledge Quiz
+  <div class="logo">🧠 Second Brain
     <span>Karpathy LLM Wiki</span>
   </div>
-  <div id="gt-wrap"></div>
+  <a class="hbtn" id="translate-btn" href="#" onclick="openTranslate(event)" title="Translate page">🌐 Translate</a>
   <button class="hbtn" id="theme-btn" onclick="toggleTheme()" title="Toggle light/dark">🌙 Dark</button>
 </header>
 
@@ -314,9 +309,9 @@ footer{text-align:center;padding:24px;font-size:.72rem;color:var(--m2);
 </main>
 
 <footer>
-  Based on <a href="../wiki/index.md">Karpathy LLM Wiki</a> ·
-  Add topics via <a href="topics.js">topics.js</a> ·
-  See <a href="CLAUDE.md">CLAUDE.md</a> for instructions
+  Based on <a href="https://github.com/lucasmasunoacn/obsidian" target="_blank">Karpathy LLM Wiki</a> ·
+  Add topics via <a href="topics.js" target="_blank">topics.js</a> ·
+  See <a href="https://github.com/lucasmasunoacn/second-brain/blob/main/quiz/CLAUDE.md" target="_blank">CLAUDE.md</a> for instructions
 </footer>
 
 <script src="topics.js"></script>
@@ -809,20 +804,18 @@ function showResults(){
 }
 
 /* ══════════════════════════════════════════════════════════
+   TRANSLATE
+══════════════════════════════════════════════════════════ */
+function openTranslate(e) {
+  e.preventDefault();
+  window.open('https://translate.google.com/translate?sl=auto&tl=en&u='+encodeURIComponent(location.href),'_blank');
+}
+
+/* ══════════════════════════════════════════════════════════
    INIT
 ══════════════════════════════════════════════════════════ */
 buildHome();
 </script>
 
-<!-- Google Translate widget (bilingual — zero content duplication) -->
-<script type="text/javascript">
-function googleTranslateElementInit() {
-  new google.translate.TranslateElement({
-    pageLanguage: 'auto',
-    layout: google.translate.TranslateElement.InlineLayout.SIMPLE
-  }, 'gt-wrap');
-}
-</script>
-<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 </body>
 </html>
