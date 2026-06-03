@@ -480,21 +480,21 @@ function renderTable(t) {
 }
 
 function renderRiskMap() {
-  const reg = [['📈','市場リスク','金利・為替・株価変動 ← 日々晒される'],
-               ['🏦','信用リスク','与信先のデフォルト ← 日々晒される'],
-               ['⚙️','オペレーショナルリスク','ミス・障害・不正 ← 突発的'],
-               ['💧','流動性リスク','資金調達困難 ← 突発的']];
-  const oth = [['🌏','地政学・イベントリスク','→ BCP対応'],
-               ['📡','システミックリスク・決済リスク','→ RRP対応'],
-               ['⚖️','リーガルリスク',''],
-               ['💬','レピュテーショナルリスク','']];
+  const reg = [['📈','Market Risk','Interest rates, FX, equity price fluctuations ← daily exposure'],
+               ['🏦','Credit Risk','Counterparty default ← daily exposure'],
+               ['⚙️','Operational Risk','Errors, system failures, fraud ← sudden downside'],
+               ['💧','Liquidity Risk','Unable to secure funding ← sudden downside']];
+  const oth = [['🌏','Geopolitical / Event Risk','→ BCP (Business Continuity Plan)'],
+               ['📡','Systemic Risk / Settlement Risk','→ RRP (Recovery & Resolution Plan)'],
+               ['⚖️','Legal Risk',''],
+               ['💬','Reputational Risk','']];
   const rows = arr => arr.map(([i,n,d])=>`
     <div class="ri"><span class="ico">${i}</span>
       <div><strong>${n}</strong>${d?`<br><span>${d}</span>`:''}</div>
     </div>`).join('');
   return `<div class="rg">
-    <div class="rcat"><h4 style="color:var(--acc)">📋 規制対象リスク</h4>${rows(reg)}</div>
-    <div class="rcat"><h4 style="color:var(--m)">🔲 その他の領域</h4>${rows(oth)}</div>
+    <div class="rcat"><h4 style="color:var(--acc)">📋 Regulatory Targets</h4>${rows(reg)}</div>
+    <div class="rcat"><h4 style="color:var(--m)">🔲 Other Domains</h4>${rows(oth)}</div>
   </div>`;
 }
 
@@ -821,7 +821,22 @@ function showResults(){
 ══════════════════════════════════════════════════════════ */
 function openTranslate(e) {
   e.preventDefault();
-  window.open('https://translate.google.com/translate?sl=auto&tl=en&u='+encodeURIComponent(location.href),'_blank');
+  const existing = document.getElementById('xlate-tip');
+  if (existing) { existing.remove(); return; }
+  const tip = document.createElement('div');
+  tip.id = 'xlate-tip';
+  tip.innerHTML = `
+    <button onclick="document.getElementById('xlate-tip').remove()"
+      style="float:right;background:none;border:none;cursor:pointer;color:var(--m);font-size:1.1rem;line-height:1">✕</button>
+    <strong>🌐 Translate this page</strong><br><br>
+    Use your <strong>browser's built-in translate</strong> — it preserves full quiz interactivity:<br><br>
+    🖥️ <strong>Desktop:</strong> Right-click anywhere on the page → "Translate to [language]"<br><br>
+    📱 <strong>Mobile:</strong> Tap the <strong>translate icon</strong> that appears in the address bar<br><br>
+    <small style="color:var(--m2)">Google Translate proxy blocks button clicks — use browser-native translate instead.</small>
+  `;
+  tip.style.cssText = 'position:fixed;top:58px;right:12px;background:var(--card);border:1px solid var(--brd);border-radius:12px;padding:16px;font-size:.82rem;max-width:290px;box-shadow:var(--sh-lg);z-index:300;line-height:1.6;color:var(--txt)';
+  document.body.appendChild(tip);
+  setTimeout(() => tip?.remove(), 10000);
 }
 
 /* ══════════════════════════════════════════════════════════
