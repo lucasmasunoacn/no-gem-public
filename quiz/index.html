@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Knowledge Quiz — LLM Wiki</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+/* ── THEME TOKENS ─────────────────────────────────────── */
+:root{
+  --bg:#f6f8fa;--surf:#ffffff;--card:#ffffff;--brd:#d1d5db;
+  --acc:#3b82f6;--grn:#10b981;--red:#ef4444;--yel:#f59e0b;--pur:#7c3aed;
+  --txt:#111827;--m:#6b7280;--m2:#9ca3af;
+  --sh:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.06);
+  --sh-lg:0 4px 16px rgba(0,0,0,.1);
+}
+[data-theme="dark"]{
+  --bg:#08101f;--surf:#101827;--card:#18202e;--brd:#253040;
+  --txt:#f1f5f9;--m:#64748b;--m2:#94a3b8;
+  --sh:0 1px 3px rgba(0,0,0,.4);--sh-lg:0 4px 16px rgba(0,0,0,.5);
+}
+
+/* ── RESET & BASE ──────────────────────────────────────── */
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+  background:var(--bg);color:var(--txt);min-height:100vh;
+  transition:background .25s,color .25s}
+a{color:var(--acc);text-decoration:none}
+strong{font-weight:700}
+
+/* ── HEADER ───────────────────────────────────────────── */
+header{
+  background:var(--surf);border-bottom:1px solid var(--brd);
+  padding:14px 24px;display:flex;align-items:center;gap:12px;
+  position:sticky;top:0;z-index:100;box-shadow:var(--sh)
+}
+.logo{font-size:1.1rem;font-weight:800;color:var(--acc);flex:1}
+.logo span{color:var(--txt);font-weight:400;font-size:.85rem;margin-left:8px}
+.hbtn{
+  padding:6px 12px;border-radius:7px;border:1px solid var(--brd);
+  background:none;color:var(--m);cursor:pointer;font-size:.8rem;
+  transition:all .15s;white-space:nowrap
+}
+.hbtn:hover{background:var(--brd);color:var(--txt)}
+#gt-wrap{font-size:.78rem}
+/* slim Google Translate widget */
+#gt-wrap .goog-te-combo{
+  background:var(--surf);border:1px solid var(--brd);border-radius:7px;
+  color:var(--m);font-size:.78rem;padding:5px 8px;cursor:pointer
+}
+
+/* ── LAYOUT ───────────────────────────────────────────── */
+main{max-width:1020px;margin:0 auto;padding:28px 18px}
+.screen{display:none}.screen.active{display:block}
+
+/* ── HOME SCREEN ──────────────────────────────────────── */
+.home-hero{text-align:center;padding:32px 0 24px}
+.home-hero h2{font-size:1.6rem;font-weight:800;margin-bottom:8px}
+.home-hero p{color:var(--m);font-size:.9rem;max-width:500px;margin:0 auto}
+.topic-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;margin-top:24px}
+.topic-card{
+  background:var(--card);border:1px solid var(--brd);border-radius:14px;
+  padding:22px;cursor:pointer;transition:all .2s;box-shadow:var(--sh)
+}
+.topic-card:hover{transform:translateY(-2px);box-shadow:var(--sh-lg);border-color:var(--acc)}
+.tc-icon{font-size:2rem;margin-bottom:10px}
+.tc-title{font-size:1rem;font-weight:700;margin-bottom:4px}
+.tc-desc{font-size:.8rem;color:var(--m);margin-bottom:14px;line-height:1.5}
+.tc-meta{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.tc-badge{font-size:.7rem;padding:3px 8px;border-radius:10px;font-weight:600;
+  background:var(--bg);border:1px solid var(--brd);color:var(--m)}
+.tc-wiki{font-size:.7rem;color:var(--m2);margin-bottom:14px}
+.tc-wiki summary{cursor:pointer;user-select:none}
+.tc-wiki li{margin-left:14px;margin-top:2px;font-family:monospace;font-size:.68rem}
+.btn{padding:9px 18px;border-radius:8px;border:none;cursor:pointer;font-size:.86rem;
+  font-weight:600;transition:all .2s;display:inline-block}
+.btn-acc{background:var(--acc);color:#fff;width:100%;text-align:center}
+.btn-acc:hover{filter:brightness(1.1)}
+.btn-sec{background:var(--brd);color:var(--txt)}.btn-sec:hover{filter:brightness(.95)}
+.btn-grn{background:var(--grn);color:#fff}.btn-grn:hover{filter:brightness(1.1)}
+.btn:disabled{opacity:.38;cursor:default}
+
+/* ── TOPIC SCREEN ─────────────────────────────────────── */
+.topic-topbar{
+  display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap
+}
+.back-btn{
+  background:none;border:1px solid var(--brd);border-radius:8px;
+  padding:7px 12px;cursor:pointer;color:var(--m);font-size:.82rem;
+  transition:all .15s;white-space:nowrap
+}
+.back-btn:hover{border-color:var(--acc);color:var(--acc)}
+.topic-topbar-title{font-weight:700;font-size:1rem;flex:1}
+.mode-tabs{display:flex;gap:4px;background:var(--bg);border:1px solid var(--brd);
+  border-radius:9px;padding:3px}
+.mbttn{padding:5px 12px;border-radius:6px;border:none;background:none;
+  color:var(--m);cursor:pointer;font-size:.8rem;font-weight:500;transition:all .15s}
+.mbttn.active{background:var(--acc);color:#fff}
+
+/* ── SLIDE CHROME ─────────────────────────────────────── */
+.slide-bar{display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.sdots{display:flex;gap:5px}
+.sdot{
+  width:24px;height:24px;border-radius:50%;border:2px solid var(--brd);
+  background:none;color:var(--m);cursor:pointer;font-size:.68rem;
+  font-weight:700;transition:all .2s
+}
+.sdot.active{background:var(--acc);border-color:var(--acc);color:#fff}
+.sdot:hover:not(.active){border-color:var(--acc)}
+.slbl{font-size:.78rem;color:var(--m);margin-left:4px}
+
+.slide{display:none}.slide.active{display:block}
+.s2{display:grid;grid-template-columns:1fr 1.05fr;gap:18px;align-items:start}
+@media(max-width:700px){.s2{grid-template-columns:1fr}}
+.s-full{}
+
+.s-num{font-size:.6rem;font-weight:800;letter-spacing:.1em;color:var(--acc);
+  text-transform:uppercase;margin-bottom:5px}
+.s-ttl{font-size:1.1rem;font-weight:700;margin-bottom:10px;line-height:1.35}
+.s-body{font-size:.84rem;color:var(--m);line-height:1.7;margin-bottom:12px}
+.fml{
+  background:var(--bg);border:1px solid var(--brd);border-radius:8px;
+  padding:10px 14px;font-family:monospace;font-size:.88rem;
+  color:var(--pur);text-align:center;margin:10px 0
+}
+[data-theme="dark"] .fml{background:var(--surf)}
+.kp{
+  margin:7px 0;padding:10px 14px;border-left:3px solid var(--brd);
+  border-radius:0 6px 6px 0;font-size:.8rem;color:var(--m);
+  background:var(--bg);line-height:1.55
+}
+[data-theme="dark"] .kp{background:var(--surf)}
+.kp.blue{border-left-color:var(--acc);background:rgba(59,130,246,.06)}
+.kp.green{border-left-color:var(--grn);background:rgba(16,185,129,.06)}
+.kp.yellow{border-left-color:var(--yel);background:rgba(245,158,11,.06)}
+.kp.red{border-left-color:var(--red);background:rgba(239,68,68,.06)}
+
+.st{width:100%;border-collapse:collapse;font-size:.78rem;margin:10px 0}
+.st th{background:var(--bg);padding:7px 10px;text-align:left;
+  color:var(--m);font-weight:600;border-bottom:2px solid var(--brd)}
+[data-theme="dark"] .st th{background:var(--surf)}
+.st td{padding:7px 10px;border-bottom:1px solid var(--brd)}
+
+/* Risk map */
+.rg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}
+@media(max-width:480px){.rg{grid-template-columns:1fr}}
+.rcat{background:var(--bg);border:1px solid var(--brd);border-radius:9px;padding:12px}
+[data-theme="dark"] .rcat{background:var(--surf)}
+.rcat h4{font-size:.76rem;font-weight:700;margin-bottom:8px}
+.ri{display:flex;align-items:flex-start;gap:7px;padding:5px 0;
+  font-size:.78rem;color:var(--m)}
+.ri:not(:last-child){border-bottom:1px solid var(--brd)}
+.ri .ico{font-size:.9rem;margin-top:1px;flex-shrink:0}
+
+/* Calc panel */
+.s-calc{
+  background:var(--card);border:1px solid var(--brd);border-radius:12px;
+  padding:18px;box-shadow:var(--sh)
+}
+.s-calc h4{font-size:.82rem;font-weight:700;color:var(--acc);margin-bottom:12px}
+.ig{margin-bottom:9px}
+.ig label{display:block;font-size:.7rem;color:var(--m);margin-bottom:4px;font-weight:500}
+.ig input,.ig select{
+  width:100%;background:var(--bg);border:1px solid var(--brd);
+  border-radius:6px;padding:6px 10px;color:var(--txt);font-size:.84rem
+}
+[data-theme="dark"] .ig input,[data-theme="dark"] .ig select{background:var(--surf)}
+.ig input[type=range]{padding:5px 0;accent-color:var(--acc)}
+.ig input:focus,.ig select:focus{outline:none;border-color:var(--acc)}
+.ig select option{background:var(--surf)}
+.ig2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.rbox{
+  background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.18);
+  border-radius:8px;padding:10px;text-align:center;margin:10px 0
+}
+.rl{font-size:.65rem;color:var(--m);text-transform:uppercase;letter-spacing:.05em}
+.rv{font-size:1.45rem;font-weight:800;color:var(--acc);margin:2px 0}
+.rs{font-size:.68rem;color:var(--m)}
+.cw{height:165px;margin-top:10px}
+.cw-note{font-size:.64rem;color:var(--m2);text-align:center;margin-top:4px}
+
+/* Slide footer */
+.sl-foot{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-top:18px;gap:10px
+}
+.sl-ctr{font-size:.8rem;color:var(--m);text-align:center}
+
+/* ── QUIZ ─────────────────────────────────────────────── */
+.qhdr{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.qlb{font-size:.78rem;color:var(--m);white-space:nowrap}
+.prog{flex:1;height:4px;background:var(--brd);border-radius:2px;overflow:hidden}
+.pfill{height:100%;background:var(--acc);border-radius:2px;transition:width .4s}
+.scb{font-size:.78rem;font-weight:700;color:var(--grn);white-space:nowrap}
+.qcard{
+  background:var(--card);border:1px solid var(--brd);border-radius:12px;
+  padding:24px;box-shadow:var(--sh)
+}
+.qcat{
+  display:inline-block;padding:2px 8px;border-radius:20px;font-size:.68rem;
+  font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+  background:rgba(59,130,246,.1);color:var(--acc);margin-bottom:11px
+}
+.qtxt{font-size:1rem;font-weight:600;line-height:1.6;margin-bottom:5px}
+.qhnt{font-size:.76rem;color:var(--m);margin-bottom:18px}
+.opts{display:grid;gap:8px}
+.opt{
+  display:flex;align-items:center;gap:10px;background:var(--bg);
+  border:1px solid var(--brd);border-radius:8px;padding:11px 14px;
+  color:var(--txt);text-align:left;cursor:pointer;font-size:.84rem;
+  transition:all .15s
+}
+[data-theme="dark"] .opt{background:var(--surf)}
+.opt:hover:not(:disabled){border-color:var(--acc);background:rgba(59,130,246,.05)}
+.opt.correct{border-color:var(--grn);background:rgba(16,185,129,.08);color:#065f46}
+[data-theme="dark"] .opt.correct{color:#6ee7b7}
+.opt.wrong{border-color:var(--red);background:rgba(239,68,68,.08);color:#7f1d1d}
+[data-theme="dark"] .opt.wrong{color:#fca5a5}
+.olbl{
+  width:21px;height:21px;border-radius:50%;background:var(--brd);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.68rem;font-weight:700;flex-shrink:0
+}
+.exp{
+  margin-top:14px;padding:11px 14px;border-left:3px solid var(--acc);
+  border-radius:0 7px 7px 0;font-size:.82rem;line-height:1.65;
+  color:var(--m);background:rgba(59,130,246,.05)
+}
+.exp strong{color:var(--txt)}
+.qnav{display:flex;justify-content:flex-end;margin-top:14px}
+.results{text-align:center;padding:24px 0}
+.sring{
+  width:110px;height:110px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;margin:0 auto 18px
+}
+.sinn{
+  width:86px;height:86px;border-radius:50%;background:var(--card);
+  display:flex;flex-direction:column;align-items:center;justify-content:center
+}
+.sn{font-size:1.7rem;font-weight:800;color:var(--acc)}
+.sd{font-size:.7rem;color:var(--m)}
+.smsg{font-size:1.15rem;font-weight:700;margin-bottom:6px}
+.ssub{color:var(--m);margin-bottom:20px;font-size:.84rem;
+  max-width:360px;margin-left:auto;margin-right:auto}
+.btn-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+
+/* ── FOOTER ───────────────────────────────────────────── */
+footer{text-align:center;padding:24px;font-size:.72rem;color:var(--m2);
+  border-top:1px solid var(--brd);margin-top:40px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🧠 Knowledge Quiz
+    <span>Karpathy LLM Wiki</span>
+  </div>
+  <div id="gt-wrap"></div>
+  <button class="hbtn" id="theme-btn" onclick="toggleTheme()" title="Toggle light/dark">🌙 Dark</button>
+</header>
+
+<main>
+
+<!-- ══ HOME ══════════════════════════════════════════════ -->
+<div id="screen-home" class="screen active">
+  <div class="home-hero">
+    <h2>Learn from the Wiki</h2>
+    <p>Slides with interactive calculators, then quiz yourself. Topics are driven by the <code>/wiki/</code> knowledge base.</p>
+  </div>
+  <div class="topic-grid" id="topic-grid"></div>
+</div>
+
+<!-- ══ TOPIC (slides + quiz) ════════════════════════════ -->
+<div id="screen-topic" class="screen">
+  <div class="topic-topbar">
+    <button class="back-btn" onclick="goHome()">← All Topics</button>
+    <div class="topic-topbar-title" id="topic-title"></div>
+    <div class="mode-tabs">
+      <button class="mbttn active" id="btn-slides" onclick="setMode('slides')">📖 Slides</button>
+      <button class="mbttn" id="btn-quiz"   onclick="setMode('quiz')">📝 Quiz</button>
+    </div>
+  </div>
+
+  <!-- Slides view -->
+  <div id="view-slides">
+    <div class="slide-bar">
+      <div class="sdots" id="sdots"></div>
+      <div class="slbl" id="slbl"></div>
+    </div>
+    <div id="slides-container"></div>
+    <div class="sl-foot">
+      <button class="btn btn-sec" id="pb" onclick="prevS()">← Prev</button>
+      <div class="sl-ctr">
+        <div id="sctr"></div>
+      </div>
+      <button class="btn btn-acc" id="nb" onclick="nextS()">Next →</button>
+    </div>
+  </div>
+
+  <!-- Quiz view -->
+  <div id="view-quiz" style="display:none">
+    <div class="qhdr">
+      <span class="qlb" id="qctr">Q 1 / ?</span>
+      <div class="prog"><div class="pfill" id="pf" style="width:0%"></div></div>
+      <span class="scb" id="qsc">✓ 0</span>
+    </div>
+    <div class="qcard" id="qcard"></div>
+    <div class="qnav" id="qnav" style="display:none">
+      <button class="btn btn-acc" id="nxt" onclick="nextQ()">Next →</button>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<footer>
+  Based on <a href="../wiki/index.md">Karpathy LLM Wiki</a> ·
+  Add topics via <a href="topics.js">topics.js</a> ·
+  See <a href="CLAUDE.md">CLAUDE.md</a> for instructions
+</footer>
+
+<script src="topics.js"></script>
+<script>
+/* ══════════════════════════════════════════════════════════
+   THEME
+══════════════════════════════════════════════════════════ */
+const root = document.documentElement;
+const themeBtn = document.getElementById('theme-btn');
+
+// Auto-detect on first load, then use stored pref
+const stored = localStorage.getItem('quiz-theme');
+const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+const initTheme = stored || (systemDark ? 'dark' : 'light');
+root.setAttribute('data-theme', initTheme);
+themeBtn.textContent = initTheme === 'dark' ? '☀️ Light' : '🌙 Dark';
+
+function toggleTheme() {
+  const t = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  root.setAttribute('data-theme', t);
+  themeBtn.textContent = t === 'dark' ? '☀️ Light' : '🌙 Dark';
+  localStorage.setItem('quiz-theme', t);
+  // Redraw active chart (colors change with theme)
+  if (activeTopic && activeSlide !== null) setTimeout(initSlideCalc, 60);
+}
+
+/* ══════════════════════════════════════════════════════════
+   HOME SCREEN
+══════════════════════════════════════════════════════════ */
+function buildHome() {
+  const grid = document.getElementById('topic-grid');
+  grid.innerHTML = (window.TOPICS || []).map(t => `
+    <div class="topic-card" onclick="openTopic('${t.id}')">
+      <div class="tc-icon">${t.icon}</div>
+      <div class="tc-title">${t.title}</div>
+      <div class="tc-desc">${t.description}</div>
+      <div class="tc-meta">
+        <span class="tc-badge">📖 ${(t.slides||[]).length} slides</span>
+        <span class="tc-badge">📝 ${(t.questions||[]).length} questions</span>
+      </div>
+      <details class="tc-wiki">
+        <summary>📂 ${(t.wikiPages||[]).length} wiki sources</summary>
+        <ul>${(t.wikiPages||[]).map(p=>`<li>${p}</li>`).join('')}</ul>
+      </details>
+      <button class="btn btn-acc" style="background:${t.color}">Start Learning →</button>
+    </div>
+  `).join('') + `
+    <div class="topic-card" style="opacity:.55;cursor:default;border-style:dashed">
+      <div class="tc-icon">➕</div>
+      <div class="tc-title">Add a Topic</div>
+      <div class="tc-desc">Edit <code>topics.js</code> following the TOPIC_TEMPLATE. See <code>CLAUDE.md</code> for Claude Code instructions.</div>
+    </div>
+  `;
+}
+
+/* ══════════════════════════════════════════════════════════
+   NAVIGATION
+══════════════════════════════════════════════════════════ */
+let activeTopic = null, activeSlide = 0, activeMode = 'slides';
+
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+id).classList.add('active');
+}
+
+function goHome() {
+  CH_destroyAll();
+  activeTopic = null;
+  show('home');
+}
+
+function openTopic(id) {
+  activeTopic = (window.TOPICS||[]).find(t=>t.id===id);
+  if (!activeTopic) return;
+  activeSlide = 0;
+  activeMode = 'slides';
+  document.getElementById('topic-title').textContent = activeTopic.icon+' '+activeTopic.title;
+  setMode('slides');
+  show('topic');
+  buildSlides();
+  goSlide(0);
+}
+
+function setMode(mode) {
+  activeMode = mode;
+  document.getElementById('view-slides').style.display = mode==='slides'?'':'none';
+  document.getElementById('view-quiz').style.display   = mode==='quiz'?'':'none';
+  document.getElementById('btn-slides').classList.toggle('active', mode==='slides');
+  document.getElementById('btn-quiz').classList.toggle('active', mode==='quiz');
+  if (mode==='quiz') { qIndex=0; qScore=0; qAnswered=false; renderQ(); }
+}
+
+/* ══════════════════════════════════════════════════════════
+   SLIDES
+══════════════════════════════════════════════════════════ */
+function buildSlides() {
+  const slides = (activeTopic.slides||[]);
+  // Build dot nav
+  document.getElementById('sdots').innerHTML = slides.map((s,i)=>
+    `<button class="sdot" onclick="goSlide(${i})" title="${s.title}">${i+1}</button>`
+  ).join('');
+  // Build slide HTML
+  document.getElementById('slides-container').innerHTML = slides.map((s,i)=>
+    `<div class="slide" id="sl${i}">${renderSlide(s)}</div>`
+  ).join('');
+}
+
+function goSlide(n) {
+  const slides = activeTopic.slides||[];
+  CH_destroyAll();
+  document.querySelectorAll('.slide').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.sdot').forEach(d=>d.classList.remove('active'));
+  activeSlide = n;
+  document.getElementById('sl'+n)?.classList.add('active');
+  document.querySelectorAll('.sdot')[n]?.classList.add('active');
+  document.getElementById('slbl').textContent = slides[n]?.title||'';
+  document.getElementById('sctr').textContent = `${n+1} / ${slides.length}`;
+  document.getElementById('pb').disabled = n===0;
+  document.getElementById('nb').textContent = n===slides.length-1 ? '📝 Take Quiz' : 'Next →';
+  document.getElementById('nb').onclick = n===slides.length-1
+    ? ()=>setMode('quiz')
+    : ()=>nextS();
+  if (slides[n]?.calc) setTimeout(initSlideCalc, 80);
+}
+
+function prevS() { if (activeSlide>0) goSlide(activeSlide-1); }
+function nextS() { const l=(activeTopic.slides||[]).length; if(activeSlide<l-1) goSlide(activeSlide+1); }
+
+/* ── Slide renderer ─────────────────────────────────────── */
+function renderSlide(s) {
+  const left = `
+    <div>
+      <div class="s-num">SLIDE ${s.num}</div>
+      <div class="s-ttl">${s.title}</div>
+      <p class="s-body">${s.body}</p>
+      ${s.formula ? `<div class="fml">${s.formula}</div>` : ''}
+      ${s.riskMap ? renderRiskMap() : ''}
+      ${s.table   ? renderTable(s.table) : ''}
+      ${(s.keyPoints||[]).map(k=>`<div class="kp ${k.color||''}">${k.text}</div>`).join('')}
+    </div>`;
+
+  if (s.calc) {
+    return `<div class="s2">${left}<div class="s-calc">${calcHTML(s.calc)}</div></div>`;
+  }
+  return `<div class="s-full">${left}</div>`;
+}
+
+function renderTable(t) {
+  return `<table class="st">
+    <tr>${t.headers.map(h=>`<th>${h}</th>`).join('')}</tr>
+    ${t.rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}
+  </table>`;
+}
+
+function renderRiskMap() {
+  const reg = [['📈','市場リスク','金利・為替・株価変動 ← 日々晒される'],
+               ['🏦','信用リスク','与信先のデフォルト ← 日々晒される'],
+               ['⚙️','オペレーショナルリスク','ミス・障害・不正 ← 突発的'],
+               ['💧','流動性リスク','資金調達困難 ← 突発的']];
+  const oth = [['🌏','地政学・イベントリスク','→ BCP対応'],
+               ['📡','システミックリスク・決済リスク','→ RRP対応'],
+               ['⚖️','リーガルリスク',''],
+               ['💬','レピュテーショナルリスク','']];
+  const rows = arr => arr.map(([i,n,d])=>`
+    <div class="ri"><span class="ico">${i}</span>
+      <div><strong>${n}</strong>${d?`<br><span>${d}</span>`:''}</div>
+    </div>`).join('');
+  return `<div class="rg">
+    <div class="rcat"><h4 style="color:var(--acc)">📋 規制対象リスク</h4>${rows(reg)}</div>
+    <div class="rcat"><h4 style="color:var(--m)">🔲 その他の領域</h4>${rows(oth)}</div>
+  </div>`;
+}
+
+/* ══════════════════════════════════════════════════════════
+   CALC PANEL HTML (inner markup, chart canvas)
+══════════════════════════════════════════════════════════ */
+function calcHTML(type) {
+  const h = {
+    var: `<h4>📐 VaR Simulator</h4>
+      <div class="ig"><label>Portfolio 億円</label><input type="number" id="v-p" value="1000" min="1" oninput="dVaR()"></div>
+      <div class="ig"><label>Daily volatility σ (%)</label><input type="number" id="v-v" value="1.5" min="0.1" max="20" step="0.1" oninput="dVaR()"></div>
+      <div class="ig2">
+        <div class="ig"><label>Holding period (days)</label><input type="number" id="v-d" value="10" min="1" max="252" oninput="dVaR()"></div>
+        <div class="ig"><label>Confidence</label>
+          <select id="v-c" onchange="dVaR()">
+            <option value="1.645">95%</option><option value="2.326" selected>99%</option><option value="3.090">99.9%</option>
+          </select>
+        </div>
+      </div>
+      <div class="rbox"><div class="rl">VaR (Max Loss)</div><div class="rv" id="v-rv">—</div><div class="rs" id="v-rs">—</div></div>
+      <div class="cw"><canvas id="cv"></canvas></div>
+      <div class="cw-note">Red = tail (exceeds VaR) / Blue = normal distribution</div>`,
+
+    el: `<h4>📐 Expected Loss (EL)</h4>
+      <div class="ig"><label>PD (Default probability) — <span id="pd-v" style="color:var(--acc);font-weight:700">2.0%</span></label>
+        <input type="range" id="el-pd" min="0.1" max="30" step="0.1" value="2" oninput="dEL()"></div>
+      <div class="ig"><label>EAD (Exposure) 億円</label><input type="number" id="el-ea" value="100" min="1" oninput="dEL()"></div>
+      <div class="ig"><label>LGD (Loss rate) — <span id="lgd-v" style="color:var(--red);font-weight:700">45%</span></label>
+        <input type="range" id="el-lg" min="1" max="100" step="1" value="45" oninput="dEL()"></div>
+      <div class="rbox"><div class="rl">Expected Loss (EL)</div><div class="rv" id="el-rv">—</div><div class="rs" id="el-rs">—</div></div>
+      <div class="cw"><canvas id="ce"></canvas></div>`,
+
+    lcr: `<h4>📐 LCR Calculator</h4>
+      <div class="ig"><label>Level 1 assets (国債等 100%) 億円</label><input type="number" id="lc-l1" value="500" min="0" oninput="dLCR()"></div>
+      <div class="ig"><label>Level 2A assets (社債等 85%) 億円</label><input type="number" id="lc-2a" value="100" min="0" oninput="dLCR()"></div>
+      <div class="ig2">
+        <div class="ig"><label>Outflows 億円</label><input type="number" id="lc-ot" value="600" min="0" oninput="dLCR()"></div>
+        <div class="ig"><label>Inflows 億円</label><input type="number" id="lc-in" value="100" min="0" oninput="dLCR()"></div>
+      </div>
+      <div class="rbox"><div class="rl">LCR</div><div class="rv" id="lc-rv">—</div><div class="rs" id="lc-rs">—</div></div>
+      <div class="cw"><canvas id="cl"></canvas></div>`,
+
+    basel: `<h4>📐 Basel III Capital Ratio</h4>
+      <div style="font-size:.68rem;color:var(--m);margin-bottom:6px">▼ Capital (億円)</div>
+      <div class="ig2">
+        <div class="ig"><label>CET1</label><input type="number" id="bs-c1" value="400" min="0" oninput="dBasel()"></div>
+        <div class="ig"><label>AT1</label><input type="number" id="bs-a1" value="100" min="0" oninput="dBasel()"></div>
+      </div>
+      <div class="ig"><label>Tier 2 億円</label><input type="number" id="bs-t2" value="150" min="0" oninput="dBasel()"></div>
+      <div style="font-size:.68rem;color:var(--m);margin-bottom:6px;margin-top:4px">▼ RWA (億円)</div>
+      <div class="ig2">
+        <div class="ig"><label>Credit RWA</label><input type="number" id="bs-cr" value="5000" min="1" oninput="dBasel()"></div>
+        <div class="ig"><label>Market + OpRisk</label><input type="number" id="bs-mo" value="1000" min="0" oninput="dBasel()"></div>
+      </div>
+      <div class="rbox"><div class="rl">Total Ratio / CET1</div><div class="rv" id="bs-rv">—</div><div class="rs" id="bs-rs">—</div></div>
+      <div class="cw"><canvas id="cb"></canvas></div>`,
+
+    raroc: `<h4>📐 RAROC Comparison</h4>
+      <div class="ig2">
+        <div>
+          <div style="font-size:.72rem;font-weight:700;color:var(--acc);margin-bottom:7px">Dept A</div>
+          <div class="ig"><label>Revenue 億円</label><input type="number" id="ra-ra" value="100" oninput="dRAROC()"></div>
+          <div class="ig"><label>Risk cost 億円</label><input type="number" id="ra-xa" value="10" oninput="dRAROC()"></div>
+          <div class="ig"><label>Econ. Capital</label><input type="number" id="ra-ea" value="50" oninput="dRAROC()"></div>
+        </div>
+        <div>
+          <div style="font-size:.72rem;font-weight:700;color:var(--yel);margin-bottom:7px">Dept B</div>
+          <div class="ig"><label>Revenue 億円</label><input type="number" id="ra-rb" value="100" oninput="dRAROC()"></div>
+          <div class="ig"><label>Risk cost 億円</label><input type="number" id="ra-xb" value="50" oninput="dRAROC()"></div>
+          <div class="ig"><label>Econ. Capital</label><input type="number" id="ra-eb" value="50" oninput="dRAROC()"></div>
+        </div>
+      </div>
+      <div class="cw"><canvas id="cr"></canvas></div>
+      <div id="ra-verd" style="text-align:center;font-size:.78rem;margin-top:7px;color:var(--m)"></div>`,
+
+    kvcache: `<h4>📐 KV Cache Memory</h4>
+      <div class="ig"><label>Layers (L)</label><input type="number" id="kv-l" value="32" min="1" oninput="dKV()"></div>
+      <div class="ig"><label>Hidden size (H)</label><input type="number" id="kv-h" value="4096" min="64" step="64" oninput="dKV()"></div>
+      <div class="ig"><label>Context length (C) tokens</label><input type="number" id="kv-c" value="128000" min="1024" step="1024" oninput="dKV()"></div>
+      <div class="ig"><label>Dtype</label>
+        <select id="kv-b" onchange="dKV()">
+          <option value="2" selected>fp16 (2 bytes)</option>
+          <option value="4">fp32 (4 bytes)</option>
+        </select>
+      </div>
+      <div class="rbox"><div class="rl">KV Cache size</div><div class="rv" id="kv-rv">—</div><div class="rs" id="kv-rs">—</div></div>
+      <div class="cw"><canvas id="ck"></canvas></div>
+      <div class="cw-note">Formula: 2 × L × H × C × bytes / 1024³</div>`,
+
+    sw30: `<h4>📊 Software Paradigm Evolution</h4>
+      <div class="cw" style="height:210px"><canvas id="csw"></canvas></div>
+      <div class="cw-note">Adaptability vs. Interpretability trade-off across paradigms</div>`,
+  };
+  return h[type] || `<p style="color:var(--m);font-size:.8rem">Calc type '${type}' not found.</p>`;
+}
+
+/* ══════════════════════════════════════════════════════════
+   CHART MANAGER
+══════════════════════════════════════════════════════════ */
+const CH = {};
+const isDark = () => root.getAttribute('data-theme')==='dark';
+const GRD = () => ({color: isDark() ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'});
+const TCK = () => ({color: isDark() ? '#64748b' : '#9ca3af', font:{size:10}});
+
+function CH_make(id, type, data, extra) {
+  if (CH[id]) { CH[id].destroy(); }
+  const opts = {
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{display:false}, ...(extra?.plugins||{})},
+    scales:{
+      x:{ticks:TCK(),grid:GRD(), ...(extra?.x||{})},
+      y:{ticks:TCK(),grid:GRD(), ...(extra?.y||{})}
+    }
+  };
+  const el = document.getElementById(id);
+  if (!el) return;
+  CH[id] = new Chart(el.getContext('2d'), {type, data, options:opts});
+}
+function CH_destroyAll() { Object.keys(CH).forEach(k=>{CH[k].destroy();delete CH[k];}); }
+
+function initSlideCalc() {
+  const c = activeTopic?.slides[activeSlide]?.calc;
+  const fns = {var:dVaR,el:dEL,lcr:dLCR,basel:dBasel,raroc:dRAROC,kvcache:dKV,sw30:dSW30};
+  if (c && fns[c]) fns[c]();
+}
+
+/* ── VaR ── */
+function dVaR(){
+  const P=+document.getElementById('v-p')?.value||1000;
+  const V=(+document.getElementById('v-v')?.value||1.5)/100;
+  const D=+document.getElementById('v-d')?.value||10;
+  const z=+document.getElementById('v-c')?.value||2.326;
+  const sig=V*Math.sqrt(D)*P, var_=z*sig;
+  const conf=document.getElementById('v-c')?.selectedOptions[0]?.text||'99%';
+  const rv=document.getElementById('v-rv'); if(rv) rv.textContent=var_.toFixed(1)+' 億円';
+  const rs=document.getElementById('v-rs'); if(rs) rs.textContent=conf+' · '+D+'d | σ_eff='+sig.toFixed(1)+'億';
+  const N=120,xm=-4.5*sig,xM=4.5*sig,st=(xM-xm)/N;
+  const xs=[],ty=[],my=[];
+  for(let i=0;i<=N;i++){const x=xm+i*st,y=Math.exp(-0.5*(x/sig)**2)/(sig*Math.sqrt(2*Math.PI));
+    xs.push(x.toFixed(0));ty.push(x<=-var_?y:null);my.push(x>-var_?y:null);}
+  CH_make('cv','line',{labels:xs,datasets:[
+    {data:ty,borderColor:'rgba(239,68,68,.8)',backgroundColor:'rgba(239,68,68,.15)',fill:true,pointRadius:0,tension:.4},
+    {data:my,borderColor:'rgba(59,130,246,.7)',backgroundColor:'rgba(59,130,246,.08)',fill:true,pointRadius:0,tension:.4}
+  ]},{x:{ticks:{...TCK(),maxTicksLimit:7,callback(v){return parseFloat(this.getLabelForValue(v)).toFixed(0)+'億'}}},y:{display:false}});
+}
+
+/* ── EL ── */
+function dEL(){
+  const pd=+document.getElementById('el-pd')?.value/100||.02;
+  const ea=+document.getElementById('el-ea')?.value||100;
+  const lg=+document.getElementById('el-lg')?.value/100||.45;
+  const pdv=document.getElementById('pd-v'); if(pdv) pdv.textContent=(pd*100).toFixed(1)+'%';
+  const lgv=document.getElementById('lgd-v'); if(lgv) lgv.textContent=(lg*100).toFixed(0)+'%';
+  const el=pd*ea*lg;
+  const rv=document.getElementById('el-rv'); if(rv) rv.textContent=el.toFixed(3)+' 億円';
+  const rs=document.getElementById('el-rs'); if(rs) rs.textContent=`${(pd*100).toFixed(2)}% × ${ea}億 × ${(lg*100).toFixed(0)}%`;
+  CH_make('ce','bar',{
+    labels:['EAD Breakdown'],
+    datasets:[
+      {label:'EL',data:[el],backgroundColor:'rgba(239,68,68,.75)',borderRadius:4},
+      {label:'Recovery',data:[Math.max(ea-el,0)],backgroundColor:'rgba(59,130,246,.4)',borderRadius:4}
+    ]
+  },{plugins:{legend:{display:true,labels:{color:isDark()?'#94a3b8':'#6b7280',font:{size:9},boxWidth:9}}},
+     x:{ticks:{display:false}},y:{ticks:{...TCK(),callback:v=>v+'億'},stacked:true},stacked:true});
+  if(CH.ce){CH.ce.options.scales.x.stacked=true;CH.ce.options.scales.y.stacked=true;CH.ce.update();}
+}
+
+/* ── LCR ── */
+function dLCR(){
+  const l1=+document.getElementById('lc-l1')?.value||0;
+  const l2=+document.getElementById('lc-2a')?.value||0;
+  const ot=+document.getElementById('lc-ot')?.value||1;
+  const inf=+document.getElementById('lc-in')?.value||0;
+  const hqla=l1+l2*.85, net=Math.max(ot-inf,.001), lcr=hqla/net*100;
+  const rv=document.getElementById('lc-rv'); if(rv) rv.textContent=lcr.toFixed(1)+'%';
+  const rs=document.getElementById('lc-rs'); if(rs){rs.textContent=lcr>=100?'✓ ≥100% achieved':'✗ Below 100% requirement';rs.style.color=lcr>=100?'var(--grn)':'var(--red)';}
+  CH_make('cl','bar',{
+    labels:['Lv1 Assets','Lv2A×85%','HQLA Total','Net Outflow'],
+    datasets:[{data:[l1,l2*.85,hqla,net],
+      backgroundColor:['rgba(16,185,129,.75)','rgba(16,185,129,.4)','rgba(59,130,246,.75)','rgba(239,68,68,.65)'],
+      borderRadius:4}]
+  },{y:{ticks:{...TCK(),callback:v=>v+'億'}}});
+}
+
+/* ── Basel ── */
+function dBasel(){
+  const c1=+document.getElementById('bs-c1')?.value||0, a1=+document.getElementById('bs-a1')?.value||0;
+  const t2=+document.getElementById('bs-t2')?.value||0, cr=+document.getElementById('bs-cr')?.value||1;
+  const mo=+document.getElementById('bs-mo')?.value||0, rwa=cr+mo||1;
+  const rc=c1/rwa*100, rt=(c1+a1)/rwa*100, rT=(c1+a1+t2)/rwa*100;
+  const rv=document.getElementById('bs-rv'); if(rv) rv.textContent=rT.toFixed(2)+'% / CET1 '+rc.toFixed(2)+'%';
+  const ok=rT>=8&&rc>=4.5;
+  const rs=document.getElementById('bs-rs'); if(rs){rs.textContent=ok?'✓ Basel III minimums met':'✗ Below minimum';rs.style.color=ok?'var(--grn)':'var(--red)';}
+  CH_make('cb','bar',{
+    labels:['CET1 Ratio','Tier1 Ratio','Total Capital'],
+    datasets:[
+      {label:'Actual',data:[rc,rt,rT],backgroundColor:['rgba(59,130,246,.75)','rgba(167,139,250,.75)','rgba(16,185,129,.75)'],borderRadius:4},
+      {label:'Minimum',data:[4.5,6.0,8.0],backgroundColor:['rgba(239,68,68,.4)','rgba(239,68,68,.4)','rgba(239,68,68,.4)'],borderRadius:4}
+    ]
+  },{plugins:{legend:{display:true,labels:{color:isDark()?'#94a3b8':'#6b7280',font:{size:9},boxWidth:9}}},
+     y:{ticks:{...TCK(),callback:v=>v+'%'}}});
+}
+
+/* ── RAROC ── */
+function dRAROC(){
+  const ra=+document.getElementById('ra-ra')?.value||0, xa=+document.getElementById('ra-xa')?.value||0;
+  const ea=Math.max(+document.getElementById('ra-ea')?.value,1);
+  const rb=+document.getElementById('ra-rb')?.value||0, xb=+document.getElementById('ra-xb')?.value||0;
+  const eb=Math.max(+document.getElementById('ra-eb')?.value,1);
+  const rA=(ra-xa)/ea*100, rB=(rb-xb)/eb*100;
+  CH_make('cr','bar',{
+    labels:['Revenue','Risk','Adj. Revenue','RAROC(%)'],
+    datasets:[
+      {label:'Dept A',data:[ra,xa,ra-xa,rA],backgroundColor:'rgba(59,130,246,.72)',borderRadius:4},
+      {label:'Dept B',data:[rb,xb,rb-xb,rB],backgroundColor:'rgba(245,158,11,.72)',borderRadius:4}
+    ]
+  },{plugins:{legend:{display:true,labels:{color:isDark()?'#94a3b8':'#6b7280',font:{size:9},boxWidth:9}}}});
+  const v=document.getElementById('ra-verd');
+  if(v){if(rA>rB)v.innerHTML=`<span style="color:var(--grn)">▲ Dept A higher RAROC (${rA.toFixed(0)}% > ${rB.toFixed(0)}%) → prioritize Dept A for EC</span>`;
+    else if(rB>rA)v.innerHTML=`<span style="color:var(--yel)">▲ Dept B higher RAROC (${rB.toFixed(0)}% > ${rA.toFixed(0)}%) → prioritize Dept B for EC</span>`;
+    else v.textContent='Departments have equal RAROC';}
+}
+
+/* ── KV Cache ── */
+function dKV(){
+  const L=+document.getElementById('kv-l')?.value||32, H=+document.getElementById('kv-h')?.value||4096;
+  const C=+document.getElementById('kv-c')?.value||128000, B=+document.getElementById('kv-b')?.value||2;
+  const gb=2*L*H*C*B/1073741824;
+  const rv=document.getElementById('kv-rv'); if(rv) rv.textContent=gb.toFixed(2)+' GB';
+  const rs=document.getElementById('kv-rs'); if(rs) rs.textContent=`2×${L}L×${H}H×${(C/1000).toFixed(0)}kCtx×${B}B`;
+  // Bar chart: KV cache vs typical GPU memory
+  CH_make('ck','bar',{
+    labels:['KV Cache','A100 80GB','H100 80GB','RTX 4090 24GB'],
+    datasets:[{data:[gb,80,80,24],
+      backgroundColor:['rgba(59,130,246,.75)','rgba(16,185,129,.5)','rgba(16,185,129,.5)','rgba(245,158,11,.5)'],
+      borderRadius:4}]
+  },{y:{ticks:{...TCK(),callback:v=>v+'GB'}}});
+}
+
+/* ── Software 3.0 ── */
+function dSW30(){
+  CH_make('csw','bar',{
+    labels:['Software 1.0\n(Explicit Code)','Software 2.0\n(Neural Nets)','Software 3.0\n(LLMs/Prompts)'],
+    datasets:[
+      {label:'Adaptability',data:[2,7,9.5],backgroundColor:'rgba(59,130,246,.72)',borderRadius:4},
+      {label:'Interpretability',data:[9.5,5,3],backgroundColor:'rgba(239,68,68,.6)',borderRadius:4},
+      {label:'Dev Speed',data:[3,6,9],backgroundColor:'rgba(16,185,129,.6)',borderRadius:4}
+    ]
+  },{
+    plugins:{legend:{display:true,labels:{color:isDark()?'#94a3b8':'#6b7280',font:{size:9},boxWidth:9}}},
+    y:{ticks:{...TCK(),max:10,callback:v=>v},max:10}
+  });
+}
+
+/* ══════════════════════════════════════════════════════════
+   QUIZ ENGINE
+══════════════════════════════════════════════════════════ */
+let qIndex=0, qScore=0, qAnswered=false;
+
+function renderQ(){
+  const qs=activeTopic?.questions||[];
+  document.getElementById('qctr').textContent=`Q ${qIndex+1} / ${qs.length}`;
+  document.getElementById('pf').style.width=`${(qIndex/qs.length)*100}%`;
+  document.getElementById('qsc').textContent=`✓ ${qScore}`;
+  const q=qs[qIndex];
+  if(!q)return;
+  const L=['A','B','C','D'];
+  document.getElementById('qcard').innerHTML=`
+    <div class="qcat">${q.cat}</div>
+    <div class="qtxt">Q${qIndex+1}. ${q.q}</div>
+    ${q.hint?`<div class="qhnt">💡 ${q.hint}</div>`:''}
+    <div class="opts" id="opts">
+      ${q.opts.map((o,i)=>`<button class="opt" onclick="pickQ(${i})" id="o${i}"><span class="olbl">${L[i]}</span>${o}</button>`).join('')}
+    </div>`;
+  qAnswered=false;
+  document.getElementById('qnav').style.display='none';
+}
+
+function pickQ(i){
+  if(qAnswered)return; qAnswered=true;
+  const q=(activeTopic?.questions||[])[qIndex];
+  document.querySelectorAll('.opt').forEach(b=>b.disabled=true);
+  if(i===q.ans){qScore++;document.getElementById(`o${i}`).classList.add('correct');document.querySelector(`#o${i} .olbl`).textContent='✓';}
+  else{document.getElementById(`o${i}`).classList.add('wrong');document.querySelector(`#o${i} .olbl`).textContent='✗';
+    document.getElementById(`o${q.ans}`).classList.add('correct');document.querySelector(`#o${q.ans} .olbl`).textContent='✓';}
+  document.getElementById('qsc').textContent=`✓ ${qScore}`;
+  const e=document.createElement('div');e.className='exp';e.innerHTML=`📖 ${q.exp}`;
+  document.getElementById('opts').after(e);
+  document.getElementById('qnav').style.display='flex';
+  document.getElementById('nxt').textContent=qIndex===(activeTopic?.questions||[]).length-1?'See Results 🏆':'Next →';
+}
+
+function nextQ(){
+  qIndex++;
+  if(qIndex>=(activeTopic?.questions||[]).length) showResults();
+  else renderQ();
+}
+
+function showResults(){
+  const qs=activeTopic?.questions||[], p=Math.round(qScore/qs.length*100);
+  let msg,sub,col;
+  if(p>=90){msg="Excellent 🏆";sub="Deep understanding demonstrated!";col='var(--grn)'}
+  else if(p>=70){msg="Good 👍";sub="Review the slides on weaker areas.";col='var(--acc)'}
+  else if(p>=50){msg="Getting there 📚";sub="Go back through the slides and retry.";col='var(--yel)'}
+  else{msg="Keep studying 📖";sub="Start from Slide 1 and work through.";col='var(--red)'}
+  document.getElementById('qcard').innerHTML=`
+    <div class="results">
+      <div class="sring" style="background:conic-gradient(${col} ${p*3.6}deg,var(--brd) 0)">
+        <div class="sinn"><div class="sn">${qScore}</div><div class="sd">/ ${qs.length}</div></div>
+      </div>
+      <div class="smsg">${msg} — ${p}%</div>
+      <div class="ssub">${sub}</div>
+      <div class="btn-row">
+        <button class="btn btn-sec" onclick="()=>{qIndex=0;qScore=0;qAnswered=false;renderQ()}">Retry</button>
+        <button class="btn btn-acc" onclick="setMode('slides')">Back to Slides</button>
+      </div>
+    </div>`;
+  document.getElementById('qnav').style.display='none';
+  document.getElementById('pf').style.width='100%';
+}
+
+/* ══════════════════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════════════════ */
+buildHome();
+</script>
+
+<!-- Google Translate widget (bilingual — zero content duplication) -->
+<script type="text/javascript">
+function googleTranslateElementInit() {
+  new google.translate.TranslateElement({
+    pageLanguage: 'auto',
+    layout: google.translate.TranslateElement.InlineLayout.SIMPLE
+  }, 'gt-wrap');
+}
+</script>
+<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+</body>
+</html>
