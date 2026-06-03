@@ -1,42 +1,47 @@
 /**
  * ══════════════════════════════════════════════════════════════
- *  KNOWLEDGE QUIZ — Topic Registry
- *  obsidian/quiz/topics.js
+ *  SECOND BRAIN — Topic Registry
+ *  second-brain/quiz/topics.js
  * ══════════════════════════════════════════════════════════════
  *
  *  ┌── FOR CLAUDE CODE ────────────────────────────────────────┐
  *  │  Read quiz/CLAUDE.md FIRST before editing this file.      │
- *  │  • Add a topic  → copy TOPIC_TEMPLATE (bottom of file)    │
- *  │  • Add slides   → copy SLIDE_TEMPLATE  (bottom of file)   │
- *  │  • Add questions→ copy QUESTION_TEMPLATE (bottom of file) │
- *  │  • Before writing questions, read wikiPages[] listed      │
- *  │    in each topic for accuracy.                            │
+ *  │  • Add a topic   → copy TOPIC_TEMPLATE (bottom of file)   │
+ *  │  • Add slides    → copy SLIDE_TEMPLATE  (bottom of file)  │
+ *  │  • Add questions → copy QUESTION_TEMPLATE (bottom)        │
+ *  │  • Before writing questions, read wikiPages[] for accuracy │
  *  └───────────────────────────────────────────────────────────┘
  *
- *  Slide `calc` types available in index.html:
+ *  Slide `calc` types (built into index.html):
  *    'var'      VaR bell-curve simulator
  *    'el'       Expected Loss (PD × EAD × LGD)
  *    'lcr'      Liquidity Coverage Ratio
  *    'basel'    Basel III capital ratio
  *    'raroc'    RAROC dept comparison
- *    'kvcache'  KV Cache memory calculator (LLM topic)
- *    'sw30'     Software 3.0 static comparison chart
+ *    'kvcache'  KV Cache memory calculator
+ *    'sw30'     Software 3.0 comparison chart
+ *
+ *  Slide `wikiSource`: array of wiki file paths (relative to obsidian repo root).
+ *  Rendered as clickable links to the private obsidian repo — visible only when
+ *  authenticated on GitHub. Safe to include in this public repo.
  *
  *  Slide `keyPoint` accent colors: 'blue' | 'green' | 'yellow' | 'red'
  */
 
+const WIKI = 'https://github.com/lucasmasunoacn/obsidian/blob/main/';
+
 window.TOPICS = [
 
 /* ══════════════════════════════════════════════════════════════
-   TOPIC 1 — 証券・金融リスク
-   Wiki sources: wiki/concepts/, wiki/infrastructure/, wiki/entities/
+   TOPIC 1 — Securities & Financial Risk
+   Source wiki: wiki/concepts/, wiki/infrastructure/, wiki/entities/
 ══════════════════════════════════════════════════════════════ */
 {
   id: 'finance',
-  title: '証券・金融リスク',
+  title: 'Securities & Financial Risk',
   icon: '📊',
   color: '#3b82f6',
-  description: 'バーゼルⅢ・VaR・信用リスク・流動性規制を対話形式で学ぶ',
+  description: 'Basel III, VaR, Credit Risk, Liquidity Regulation — from the Accenture FS curriculum',
   slideCount: 6,
   wikiPages: [
     'wiki/concepts/Capital Markets.md',
@@ -55,201 +60,205 @@ window.TOPICS = [
   slides: [
     {
       num: '01',
-      title: '金融リスクの全体マップ',
-      body: '金融機関のリスクを「規制対象リスク」と「その他の領域」に分類します。<strong>日々晒されるリスク</strong>（市場・信用）と<strong>突発的なダウンサイドリスク</strong>（オペ・流動性）が主要4分類です。',
+      title: 'Financial Risk — Overview Map',
+      body: 'Financial institution risks split into "regulatory risks" and "other domains". The four primary categories are <strong>daily-exposure risks</strong> (market, credit) and <strong>sudden downside risks</strong> (operational, liquidity).',
       riskMap: true,
       table: {
-        headers: ['規制・枠組み', '主なカバー領域', 'タイプ'],
+        headers: ['Regulation / Framework', 'Primary Coverage', 'Type'],
         rows: [
-          ['自己資本比率規制（バーゼルⅡ/Ⅲ）', '市場・信用・オペリスク', 'グローバル'],
-          ['LCR / NSFR', '流動性リスク', 'グローバル'],
-          ['TLAC', 'システミックリスク（G-SIBs破綻時）', 'グローバル'],
-          ['ボルカールール / リングフェンス', 'プロップ取引・商業銀行分離', '米・英固有'],
-          ['MiFIDⅡ / MiFIR', '最良執行・透明性', 'EU固有'],
+          ['Capital Adequacy (Basel II/III)', 'Market, Credit, Operational Risk', 'Global'],
+          ['LCR / NSFR', 'Liquidity Risk', 'Global'],
+          ['TLAC', 'Systemic Risk (G-SIBs resolution)', 'Global'],
+          ['Volcker Rule / Ring-fencing', 'Proprietary trading / bank separation', 'US / UK'],
+          ['MiFID II / MiFIR', 'Best execution, transparency', 'EU'],
         ]
       },
       keyPoints: [
-        { text: '規制の4特徴：①グローバル＋ローカル並存 ②段階的強化（LCR: 2015年60%→2019年100%）③広範囲（自己資本・流動性・報酬まで）④G-SIBs追加要件（日本の3メガバンク含む）' }
-      ]
+        { text: '4 regulatory characteristics: ① Global + local coexistence ② Phased strengthening (LCR: 60%→100% over 2015–2019) ③ Broad scope (capital, liquidity, remuneration) ④ G-SIBs additional requirements (Japan\'s 3 mega-banks included)' }
+      ],
+      wikiSource: ['wiki/concepts/Capital Markets.md', 'wiki/concepts/Basel III Regulation.md']
     },
     {
       num: '02',
-      title: '市場リスク ― VaR（バリュー・アット・リスク）',
-      body: '金利・為替・株価等の変動により資産価値が変化して損失を被るリスク。',
-      formula: 'VaR = z × σ × √保有期間 × ポートフォリオ額',
+      title: 'Market Risk — VaR (Value at Risk)',
+      body: 'Risk that asset values change due to fluctuations in interest rates, FX, or equity prices.',
+      formula: 'VaR = z × σ × √Holding Period × Portfolio Value',
       table: {
-        headers: ['パラメータ', '意味', '例'],
+        headers: ['Parameter', 'Meaning', 'Example'],
         rows: [
-          ['観測期間', '過去データ何日分を使うか', '250日'],
-          ['保有期間', '何日間保有し続けるか', '10日'],
-          ['信頼水準', '何%の確率で収まるか', '99%（z=2.326）'],
+          ['Observation period', 'How many past days of data to use', '250 days'],
+          ['Holding period', 'How many days to hold the position', '10 days'],
+          ['Confidence level', 'Probability the loss stays within VaR', '99% (z = 2.326)'],
         ]
       },
       keyPoints: [
-        { color: 'blue',   text: '読み方：VaR=9億円（99%・10日）→「今後10日間に9億円以上損する確率は1%」' },
-        { color: 'green',  text: 'BPV（金利1bp）・GPS（特定年限シフト）・SPV（スロープ変化）は感応度分析。VaRは統計的最大損失額。' },
-        { color: 'yellow', text: '💡 金利↑ → 債券価格↓（逆相関）。市中金利が上昇すると既存低利率債券の価値は下落。' },
+        { color: 'blue',   text: 'Reading: VaR = ¥9B (99%, 10d) → "Only 1% chance of losing ¥9B+ over the next 10 days."' },
+        { color: 'green',  text: 'BPV (1bp rate shift), GPS (specific tenor), SPV (slope change) = sensitivity analysis. VaR = statistical maximum loss estimate.' },
+        { color: 'yellow', text: '💡 Interest rates ↑ → Bond prices ↓ (inverse relationship). Higher market rates make existing low-coupon bonds less attractive → their price falls.' },
       ],
-      calc: 'var'
+      calc: 'var',
+      wikiSource: ['wiki/concepts/Value at Risk.md']
     },
     {
       num: '03',
-      title: '信用リスク ― 期待損失額（EL）',
-      body: '与信先の財務悪化により資産価値が減少・消失するリスク。基本計量指標が期待損失額（EL）です。',
+      title: 'Credit Risk — Expected Loss (EL)',
+      body: 'Risk that asset value decreases or disappears due to a counterparty\'s financial deterioration. The core quantitative metric is Expected Loss (EL).',
       formula: 'EL = PD × EAD × LGD',
       table: {
-        headers: ['記号', '英語', '意味'],
+        headers: ['Symbol', 'Full Name', 'Meaning'],
         rows: [
-          ['PD', 'Probability of Default', 'デフォルト確率（格付けに連動）'],
-          ['EAD', 'Exposure at Default', 'デフォルト時エクスポージャー額'],
-          ['LGD', 'Loss Given Default', '損失率 ＝ 1 − 回収率'],
+          ['PD', 'Probability of Default', 'Chance of default — linked to internal credit rating'],
+          ['EAD', 'Exposure at Default', 'Outstanding exposure at the time of default'],
+          ['LGD', 'Loss Given Default', 'Loss rate = 1 − Recovery Rate'],
         ]
       },
       keyPoints: [
-        { color: 'blue',   text: '担保カバー率60% → 回収率60% → LGD=40%。担保の種類・カバー率によって変わります。' },
-        { color: 'green',  text: 'ELは「引当金（平均的損失）」、信用VaRは「99%信頼水準の最大損失」。差分=予期しない損失（UL）は自己資本でカバー。' },
-        { color: 'yellow', text: 'CVA ≈ ∫EPE × PD × LGD × 割引率 dt。デリバの「貸倒引当金」。トレーダーへの賦課で低格付先との取引を自然に抑制。' },
+        { color: 'blue',   text: 'Collateral coverage 60% → Recovery rate 60% → LGD = 40%. Varies by collateral type (real estate, securities, etc.) and coverage ratio.' },
+        { color: 'green',  text: 'EL = average expected loss (like a loan loss provision). Credit VaR = 99th percentile max loss. The gap = Unexpected Loss (UL), covered by regulatory capital.' },
+        { color: 'yellow', text: 'CVA ≈ ∫EPE × PD × LGD × discount dt — the "loan loss provision for derivatives". Charging CVA to traders naturally deters transactions with low-credit counterparties.' },
       ],
-      calc: 'el'
+      calc: 'el',
+      wikiSource: ['wiki/concepts/Basel III Regulation.md']
     },
     {
       num: '04',
-      title: '流動性リスク ― LCR / NSFR',
-      body: '調達と運用の<strong>期間ミスマッチ</strong>や予期せぬ資金流出により資金確保が困難になるリスク。2008年金融危機を受けバーゼル委員会が2指標を導入。',
-      formula: 'LCR = HQLA（適格流動資産） / 30日ネット資金流出 ≥ 100%',
+      title: 'Liquidity Risk — LCR / NSFR',
+      body: 'Risk that securing funds becomes difficult due to <strong>maturity mismatches</strong> or unexpected cash outflows. Introduced post-2008 financial crisis by the Basel Committee.',
+      formula: 'LCR = HQLA (High-Quality Liquid Assets) / 30-day Net Cash Outflow ≥ 100%',
       table: {
-        headers: ['レベル', '資産例', '掛目'],
+        headers: ['Level', 'Asset Examples', 'Haircut'],
         rows: [
-          ['Lv1', '現金・中銀預金・国債（RW0%）', '100%'],
-          ['Lv2A', '高品質社債・カバードボンド', '85%'],
-          ['Lv2B', 'RMBS（AA以上）', '75%'],
-          ['Lv3', '株式・BBB〜A+社債', '50%'],
+          ['Lv 1', 'Cash, central bank reserves, 0% RW government bonds', '100%'],
+          ['Lv 2A', 'High-quality corporate bonds, covered bonds', '85%'],
+          ['Lv 2B', 'RMBS (AA+ rated)', '75%'],
+          ['Lv 3', 'Equities, BBB–A+ corporate bonds', '50%'],
         ]
       },
       keyPoints: [
-        { color: 'green',  text: '段階的強化：2015年60% → 2016年70% → 2017年80% → 2018年90% → 2019年100%' },
-        { color: 'blue',   text: 'NSFR = 利用可能な安定調達 / 所要安定調達 ≥ 100%。「3ヵ月借入で2年貸付」のミスマッチを防ぐ。' },
+        { color: 'green',  text: 'Phased in: 2015 → 60% | 2016 → 70% | 2017 → 80% | 2018 → 90% | 2019 → 100% (full compliance)' },
+        { color: 'blue',   text: 'NSFR = Available Stable Funding / Required Stable Funding ≥ 100%. Prevents "3-month borrowing to fund 2-year lending" — if borrowing cannot be rolled over in a crisis, insolvency follows.' },
       ],
-      calc: 'lcr'
+      calc: 'lcr',
+      wikiSource: ['wiki/concepts/Basel III Regulation.md']
     },
     {
       num: '05',
-      title: '自己資本規制 ― バーゼルⅡ / Ⅲ',
-      body: '金融機関が保有すべき最低自己資本を定める国際規制。バーゼルⅢでは<strong>資本の質向上</strong>と<strong>流動性規制</strong>が追加されました。',
-      formula: '自己資本比率 = 自己資本 / (信用RWA + 市場リスク + オペリスク) ≥ 8%',
+      title: 'Capital Adequacy — Basel II / III',
+      body: 'International regulation defining the minimum capital that financial institutions must hold. Basel III added <strong>capital quality improvements</strong> and <strong>liquidity regulation</strong> to the existing framework.',
+      formula: 'Capital Ratio = Own Capital / (Credit RWA + Market Risk + Op Risk) ≥ 8%',
       table: {
-        headers: ['区分', '主な構成要素', 'バーゼルⅢ最低比率'],
+        headers: ['Tier', 'Main Components', 'Basel III Minimum'],
         rows: [
-          ['CET1', '普通株式・利益剰余金（最高品質）', '4.5%'],
-          ['Tier1', 'CET1 + AT1（優先株等）', '6.0%'],
-          ['Total', 'Tier1 + Tier2（劣後債等）', '8.0%'],
+          ['CET1', 'Common equity, retained earnings (highest quality)', '4.5%'],
+          ['Tier 1', 'CET1 + AT1 (preferred shares, etc.)', '6.0%'],
+          ['Total Capital', 'Tier 1 + Tier 2 (subordinated debt, etc.)', '8.0%'],
         ]
       },
       keyPoints: [
-        { color: 'blue',   text: 'バーゼルⅢの追加要件：資本保全バッファ+2.5%、カウンターシクリカルバッファ、G-SIBsサーチャージ+1〜3.5%、TLAC' },
-        { color: 'yellow', text: 'FRTB（マーケットリスク規制抜本見直し）・IRRBB（銀行勘定金利リスク）もバーゼルⅢの重要追加要素' },
+        { color: 'blue',   text: 'Basel III additions: capital conservation buffer +2.5% (CET1), countercyclical buffer, G-SIBs surcharge +1–3.5%, TLAC (Total Loss-Absorbing Capacity).' },
+        { color: 'yellow', text: 'FRTB (Fundamental Review of the Trading Book) and IRRBB (Interest Rate Risk in the Banking Book) are significant additional Basel III regulatory changes.' },
       ],
-      calc: 'basel'
+      calc: 'basel',
+      wikiSource: ['wiki/concepts/Basel III Regulation.md']
     },
     {
       num: '06',
-      title: 'RAROC ― リスク調整後資本収益率',
-      body: '単純な収益ではなく、内包されるリスクを控除した後の収益で評価する指標。事業部門間の<strong>資本配賦の意思決定</strong>に使われます。',
-      formula: 'RAROC = (収益 − リスクコスト) / 経済資本（EC）',
+      title: 'RAROC — Risk-Adjusted Return on Capital',
+      body: 'Instead of comparing raw revenue, deduct the embedded risk cost first. RAROC is used for <strong>economic capital allocation</strong> decisions across business units.',
+      formula: 'RAROC = (Revenue − Risk Cost) / Economic Capital (EC)',
       table: {
-        headers: ['', '部門A', '部門B'],
+        headers: ['', 'Unit A', 'Unit B'],
         rows: [
-          ['収益', '100億', '100億'],
-          ['リスク', '10億', '50億'],
-          ['EC', '50億', '50億'],
+          ['Revenue', '¥100B', '¥100B'],
+          ['Risk cost', '¥10B', '¥50B'],
+          ['Econ. Capital', '¥50B', '¥50B'],
           ['RAROC', '180%', '100%'],
         ]
       },
       keyPoints: [
-        { color: 'blue',   text: 'EC配賦：①VaRでリスク計量→②ECをリミットとして配賦→③部門がテイク→④RAROCで評価→⑤バックテスト' },
-        { color: 'yellow', text: 'CVAとの連動：CVA引当金をトレーダーに賦課 → 低格付先との取引コストが可視化 → 自然と高格付先優先' },
+        { color: 'blue',   text: 'EC allocation flow: ① Measure risk via VaR → ② Allocate EC as unit limits → ③ Units take risk within EC → ④ Evaluate by RAROC → ⑤ Validate via backtesting.' },
+        { color: 'yellow', text: 'CVA linkage: charging CVA to traders makes low-credit counterparty costs visible, naturally prioritizing high-rated counterparties — aligns incentives without mandates.' },
       ],
-      calc: 'raroc'
+      calc: 'raroc',
+      wikiSource: ['wiki/infrastructure/Securities Firm Systems.md', 'wiki/concepts/Basel III Regulation.md']
     },
   ],
 
   questions: [
-    {cat:"リスク基礎",
-     q:"金融規制（バーゼルⅢ等）の主な対象に含まれないリスクはどれか？",
-     hint:"4つの主要リスク（市場・信用・オペ・流動性）と「その他の領域」を区別しましょう",
-     opts:["市場リスク","信用リスク","地政学リスク","オペレーショナルリスク"],ans:2,
-     exp:"<strong>地政学リスク</strong>は「その他の領域（BCP対応）」に分類されます。バーゼル規制の主な対象は①市場②信用③オペレーショナル④流動性の4分類です。"},
-    {cat:"市場リスク",
-     q:"VaRの3パラメータとして正しい組み合わせはどれか？",
-     hint:"「どのくらい過去を見て・何日間持ち続けて・何%の確率で収まるか」で定義されます",
-     opts:["観測期間・保有期間・信頼水準","観測期間・回収率・信頼水準","PD・EAD・LGD","保有期間・格付け・信頼水準"],ans:0,
-     exp:"<strong>観測期間</strong>（過去データ日数）、<strong>保有期間</strong>（何日間保有）、<strong>信頼水準</strong>（99%など）の3つです。"},
-    {cat:"市場リスク",
-     q:"金利が上昇したとき、保有する固定利付き債券の価格はどうなるか？",
-     hint:"利息2%の債券を持っているとき、市中金利が3%になったら、その債券の魅力は…",
-     opts:["上昇する","下落する","変化しない","デュレーションのみに依存する"],ans:1,
-     exp:"<strong>金利↑ → 債券価格↓</strong>（逆相関）。市中金利が上がると低利率の既存債券の魅力が薄れ、価格が下落します。"},
-    {cat:"市場リスク",
-     q:"GPS（Grid Point Sensitivity）手法の説明として正しいのはどれか？",
-     opts:["カーブ全体を平行移動させて影響を測る","特定年限だけを局所的にシフトして年限ごとのリスクを測る","スティープ化・フラット化など形状変化リスクを測る","株価の変動に対する感応度を測る"],ans:1,
-     exp:"<strong>GPS</strong>はイールドカーブの特定年限だけを局所シフトし、細かい年限ごとのリスクを把握します。BPVはカーブ全体の平行移動、SPVはスロープ変化を測ります。"},
-    {cat:"信用リスク",
-     q:"期待損失額（EL）の正しい計算式はどれか？",
+    {cat:"Risk Basics",
+     q:"Which of the following is NOT among the major risk categories targeted by financial regulation (Basel III)?",
+     hint:"The 4 main categories are market, credit, operational, and liquidity. Think about which belongs to 'other domains'.",
+     opts:["Market risk","Credit risk","Geopolitical risk","Operational risk"],ans:2,
+     exp:"<strong>Geopolitical risk</strong> falls under 'other domains' (BCP-covered) — not a Basel regulatory target. The 4 Basel targets are ① market ② credit ③ operational ④ liquidity risk."},
+    {cat:"Market Risk",
+     q:"What are the 3 parameters that define a VaR measurement?",
+     hint:"Think: how far back do you look, how long do you hold, and how confident are you?",
+     opts:["Observation period, holding period, confidence level","Observation period, recovery rate, confidence level","PD, EAD, LGD","Holding period, credit rating, confidence level"],ans:0,
+     exp:"<strong>Observation period</strong> (past data days), <strong>holding period</strong> (days held), and <strong>confidence level</strong> (e.g. 99%). Reading: VaR = ¥9B means only 1% chance of losing ¥9B+ over the holding period."},
+    {cat:"Market Risk",
+     q:"When interest rates rise, what happens to a fixed-rate bond you hold?",
+     hint:"You hold a bond paying 2% coupon. Market rates move to 3%. How attractive is your bond now?",
+     opts:["Its price rises","Its price falls","Its price stays the same","It depends only on duration"],ans:1,
+     exp:"<strong>Interest rates ↑ → Bond prices ↓</strong> (inverse relationship). Higher market rates make existing low-coupon bonds less attractive — their market price falls to compensate."},
+    {cat:"Market Risk",
+     q:"Which description correctly defines GPS (Grid Point Sensitivity)?",
+     hint:"There are 3 sensitivity methods — BPV, GPS, SPV. Each measures a different type of yield curve movement.",
+     opts:["Shifts the entire yield curve in parallel to measure impact","Shifts only a specific maturity point to measure per-tenor risk","Measures steepening/flattening yield curve shape risk","Measures equity price sensitivity"],ans:1,
+     exp:"<strong>GPS</strong> shifts only a specific maturity point locally — giving granular risk by tenor. BPV = parallel shift of the full curve. SPV = slope (steepening/flattening) change."},
+    {cat:"Credit Risk",
+     q:"Which formula correctly calculates Expected Loss (EL)?",
      opts:["EL = PD + EAD + LGD","EL = PD × EAD ÷ LGD","EL = PD × EAD × LGD","EL = (1 − PD) × EAD × LGD"],ans:2,
-     exp:"<strong>EL = PD × EAD × LGD</strong>。デフォルト確率 × デフォルト時エクスポージャー × デフォルト時損失率。"},
-    {cat:"信用リスク",
-     q:"LGD（Loss Given Default）の計算式として正しいのはどれか？",
-     opts:["1 + 回収率","1 − 回収率","デフォルト確率 × 回収率","エクスポージャー ÷ 担保額"],ans:1,
-     exp:"<strong>LGD = 1 − 回収率</strong>。担保で60%回収できればLGD = 40%。担保の種類・カバー率によって変化します。"},
-    {cat:"信用リスク",
-     q:"CVA（Credit Value Adjustment）を一言で表すと最も適切なのはどれか？",
-     opts:["市場VaRを信用リスクに適用した指標","店頭デリバの相手方デフォルト時の期待損失の現在価値を時価に反映","LCRを補完する流動性調整指標","G-SIBsに課される追加資本要件"],ans:1,
-     exp:"<strong>CVA</strong>は店頭デリバの取引相手がデフォルトした際に取り損なうポジションの現在価値。ローンの<strong>貸倒引当金</strong>をデリバに適用したものです。"},
-    {cat:"流動性リスク",
-     q:"LCR（流動性カバレッジ比率）の計算式として正しいのはどれか？",
-     opts:["適格流動資産（HQLA）÷ 30日間のネット資金流出 ≥ 100%","利用可能な安定調達額 ÷ 所要安定調達額 ≥ 100%","自己資本 ÷ リスク加重資産 ≥ 8%","リスク調整後収益 ÷ 経済資本"],ans:0,
-     exp:"<strong>LCR = HQLA ÷ 30日ネット資金流出 ≥ 100%</strong>。②はNSFR、③は自己資本比率、④はRAROCです。"},
-    {cat:"流動性リスク",
-     q:"LCRの適格流動資産のうち、掛目が100%なのはどれか？",
-     opts:["A格以上の一般事業会社の社債","住宅ローン担保証券（RMBS）AA以上","現金・中央銀行預金・リスクウェイト0%の国債","カバードボンド（AA以上）"],ans:2,
-     exp:"<strong>レベル1資産</strong>（現金・中銀預金・リスクウェイト0%の国債等）のみ掛目100%。L2A（社債等）は85%、L2B（RMBS AA+）は75%です。"},
-    {cat:"流動性リスク",
-     q:"NSFRが防ごうとする問題として最も適切な説明はどれか？",
-     opts:["30日間の短期ストレスへの耐性不足","短期で調達し長期で運用する期間ミスマッチによる資金繰り破綻","取引相手のデフォルトによる損失","グローバル銀行の自己資本不足"],ans:1,
-     exp:"<strong>NSFR</strong>は「3ヵ月借入で2年貸付→危機時に借入更新できず破綻」を防ぎます。長期安定負債で長期資産をカバーすることを要求します。"},
-    {cat:"規制・バーゼルⅢ",
-     q:"バーゼルⅢで新設された「最高品質の自己資本」の区分名はどれか？",
-     opts:["Tier1","Tier2","CET1（Common Equity Tier 1）","TLAC"],ans:2,
-     exp:"<strong>CET1</strong>はバーゼルⅢで新設された最高品質の自己資本区分で、普通株式・利益剰余金のみで構成。最低比率は4.5%。"},
-    {cat:"規制・バーゼルⅢ",
-     q:"RAROCの計算式として正しいのはどれか？",
-     opts:["(収益 + リスク) ÷ 経済資本","(収益 − リスク) ÷ 経済資本","収益 ÷ (経済資本 × リスク)","リスク × 収益 ÷ 自己資本"],ans:1,
-     exp:"<strong>RAROC = (収益 − リスク) ÷ EC</strong>。同じ収益・資本でもリスクが低い部門のRAROCが高くなります。資本配賦の意思決定に使います。"},
-    {cat:"規制・バーゼルⅢ",
-     q:"バーゼルⅡの自己資本比率規制の分母（3要素）として正しいのはどれか？",
-     opts:["市場リスク＋信用リスク＋地政学リスク","信用リスク＋オペリスク＋流動性リスク","信用リスク＋市場リスク＋オペレーショナルリスク","市場リスク＋流動性リスク＋レピュテーショナルリスク"],ans:2,
-     exp:"自己資本比率 = 自己資本 ÷ （<strong>信用リスク＋市場リスク＋オペレーショナルリスク</strong>） ≥ 8%。バーゼルⅢでLCR・NSFR・レバレッジ比率等が追加されました。"},
-    {cat:"証券システム",
-     q:"東証ArrowHead（2010年導入）で注文受付時間はどう変化したか？",
-     opts:["5秒 → 1秒","3秒 → 10ミリ秒","1秒 → 100マイクロ秒","10秒 → 1ミリ秒"],ans:1,
-     exp:"<strong>ArrowHead</strong>では注文受付が3秒から<strong>10ミリ秒</strong>に短縮。Tick毎秒600→8,200件（約13.5倍）に増加。"},
-    {cat:"証券システム",
-     q:"ジェイコム株誤発注事件（2005年）のSEへの教訓として最も適切なのはどれか？",
-     opts:["大量注文は技術的に禁止すべき","メッセージボックスのデフォルトはキャンセルをカレントにすべき","東証との接続を常時2系統にすべき","担当者2名によるダブルチェックを必須にすべき"],ans:1,
-     exp:"<strong>「危険な操作はデフォルトで取り消せる設計」</strong>。確認ダイアログでは「実行」ではなく「キャンセル」がデフォルトフォーカスになるよう設計します。"},
+     exp:"<strong>EL = PD × EAD × LGD</strong>. Default probability × exposure at default × loss given default. This is the baseline credit risk metric — analogous to a loan loss provision."},
+    {cat:"Credit Risk",
+     q:"Which formula correctly defines LGD (Loss Given Default)?",
+     hint:"If you have collateral covering 60%, how much do you actually lose?",
+     opts:["1 + Recovery Rate","1 − Recovery Rate","Default probability × Recovery Rate","Exposure ÷ Collateral value"],ans:1,
+     exp:"<strong>LGD = 1 − Recovery Rate</strong>. If collateral covers 60% → Recovery Rate = 60% → LGD = 40%. The type and coverage ratio of collateral determine LGD."},
+    {cat:"Credit Risk",
+     q:"Which best describes CVA (Credit Value Adjustment)?",
+     hint:"Think of it as the equivalent of a loan loss provision, but applied to derivatives.",
+     opts:["VaR methodology applied to credit risk","Present value of expected loss on OTC derivatives if the counterparty defaults","A liquidity metric complementing LCR","Additional capital surcharge imposed on G-SIBs"],ans:1,
+     exp:"<strong>CVA</strong> is the present value of the expected loss from an OTC derivative counterparty defaulting — essentially the 'loan loss provision for derivatives'. Charging CVA to traders naturally discourages high-risk counterparties."},
+    {cat:"Liquidity Risk",
+     q:"Which formula correctly defines LCR?",
+     opts:["HQLA ÷ 30-day net cash outflows ≥ 100%","Available stable funding ÷ required stable funding ≥ 100%","Own capital ÷ risk-weighted assets ≥ 8%","Risk-adjusted return ÷ economic capital"],ans:0,
+     exp:"<strong>LCR = HQLA ÷ 30-day net cash outflows ≥ 100%</strong>. ② is NSFR, ③ is the Basel capital ratio, ④ is RAROC."},
+    {cat:"Liquidity Risk",
+     q:"Which HQLA level receives a 100% haircut (full value counted)?",
+     hint:"Think about the safest, most liquid assets a bank can hold.",
+     opts:["Investment-grade corporate bonds (A+)","Residential mortgage-backed securities (RMBS, AA+)","Cash, central bank reserves, 0% risk-weight government bonds","Covered bonds (AA+)"],ans:2,
+     exp:"<strong>Level 1 assets</strong> (cash, central bank reserves, 0% RW government bonds) qualify at 100%. Level 2A (corp bonds, covered bonds) = 85%. Level 2B (RMBS AA+) = 75%."},
+    {cat:"Liquidity Risk",
+     q:"What core problem does NSFR address?",
+     opts:["Short-term (30-day) stress — insufficient liquid assets","Maturity mismatch: funding long-term assets with short-term debt, causing insolvency when rollover fails","Counterparty default loss on derivative contracts","Global bank capital adequacy shortfall"],ans:1,
+     exp:"<strong>NSFR</strong> targets maturity mismatch. Classic failure: borrow 3-month money, lend for 2 years. In a crisis, the short-term rollover fails but the long-term loan can't be recalled → insolvency."},
+    {cat:"Basel III",
+     q:"Which capital tier was newly introduced in Basel III?",
+     opts:["Tier 1 (common equity + preferred shares)","Tier 2 (subordinated debt, etc.)","CET1 — Common Equity Tier 1","TLAC — Total Loss-Absorbing Capacity"],ans:2,
+     exp:"<strong>CET1 (Common Equity Tier 1)</strong> was introduced in Basel III — consisting solely of common shares and retained earnings. It is the highest-quality capital tier, with a minimum requirement of 4.5%."},
+    {cat:"Basel III",
+     q:"Which formula correctly defines RAROC?",
+     opts:["(Revenue + Risk) ÷ Economic Capital","(Revenue − Risk) ÷ Economic Capital","Revenue ÷ (Economic Capital × Risk)","Risk × Revenue ÷ Own Capital"],ans:1,
+     exp:"<strong>RAROC = (Revenue − Risk Cost) ÷ Economic Capital</strong>. Two units with the same revenue but different risk levels will have different RAROCs. Used to allocate capital to the most efficient business units."},
+    {cat:"Basel III",
+     q:"What are the 3 denominator components of the Basel II capital ratio?",
+     opts:["Market risk + credit risk + geopolitical risk","Credit risk + op risk + liquidity risk","Credit risk + market risk + operational risk","Market risk + liquidity risk + reputational risk"],ans:2,
+     exp:"Basel II: Capital Ratio = Own Capital ÷ (<strong>Credit risk + Market risk + Operational risk</strong>) ≥ 8%. Basel III then added LCR, NSFR, leverage ratio, and various capital buffers on top."},
+    {cat:"Securities Systems",
+     q:"How did TSE ArrowHead (launched 2010) change order processing time?",
+     opts:["5 seconds → 1 second","3 seconds → 10 milliseconds","1 second → 100 microseconds","10 seconds → 1 millisecond"],ans:1,
+     exp:"<strong>ArrowHead</strong> reduced order processing from 3 seconds to <strong>10 milliseconds</strong>. Market data tick capacity also grew from 600 to 8,200 ticks/sec (~13.5×). Co-location services were introduced."},
+    {cat:"Securities Systems",
+     q:"What is the key SE design lesson from the J-COM stock misorder incident (2005)?",
+     hint:"A trader entered '1 yen for 610,000 shares' instead of '¥610,000 for 1 share'. Think about UI default states.",
+     opts:["Large orders should be blocked by the system","Confirmation dialogs should default focus to Cancel — not Confirm","Exchange connections should always be dual-line","Two-person double-check should be mandatory for all orders"],ans:1,
+     exp:"<strong>'Default the dangerous action to Cancel.'</strong> Confirmation dialogs should focus the Cancel button, not Confirm — so an accidental Enter key press triggers cancellation, not execution. ¥40.4B in losses led to a ¥10.7B Supreme Court settlement against TSE."},
   ]
 },
 
 /* ══════════════════════════════════════════════════════════════
    TOPIC 2 — AI & LLM Fundamentals
-   Wiki sources: wiki/concepts/Software 3.0.md,
-                 wiki/concepts/Transformer Architecture.md,
-                 wiki/concepts/KV Caching.md,
-                 wiki/concepts/12-Factor Agents.md,
-                 wiki/concepts/Vibe Coding.md,
-                 wiki/concepts/Agentic AI.md,
-                 wiki/concepts/Human-in-the-loop.md,
-                 wiki/concepts/GraphRAG.md
+   Source wiki: wiki/concepts/Software 3.0.md etc.
 ══════════════════════════════════════════════════════════════ */
 {
   id: 'llm',
@@ -286,77 +295,81 @@ window.TOPICS = [
       },
       keyPoints: [
         { color: 'blue',   text: 'Karpathy\'s insight: "The hot new programming language is English." Prompts are programs.' },
-        { color: 'green',  text: 'This wiki implements Karpathy\'s LLM Wiki: a 3-layer architecture where LLMs incrementally build and maintain a compiled knowledge base (vs. RAG retrieval every query).' },
-        { color: 'yellow', text: '3 layers: Raw Sources (immutable) → Wiki /wiki/ (LLM-owned) → Schema /README, prompts/ (config). LLM reads raw, writes wiki, follows schema.' },
+        { color: 'green',  text: 'This wiki implements Karpathy\'s LLM Wiki: LLMs incrementally build and maintain a compiled knowledge base — paying synthesis cost once, vs. RAG which re-synthesizes on every query.' },
+        { color: 'yellow', text: '3 layers: Raw Sources (immutable) → Wiki /wiki/ (LLM-owned synthesis) → Schema /README, prompts/ (config). LLM reads raw, writes wiki, follows schema.' },
       ],
-      calc: 'sw30'
+      calc: 'sw30',
+      wikiSource: ['wiki/concepts/Software 3.0.md', 'wiki/concepts/Vibe Coding.md']
     },
     {
       num: '02',
       title: 'Transformer Architecture',
       body: 'The Transformer (Vaswani et al., "Attention Is All You Need", 2017) replaced sequential RNNs with <strong>parallel self-attention</strong>, enabling training at unprecedented scale.',
-      formula: 'Attention(Q,K,V) = softmax(QK᷊ / √d_k) · V',
+      formula: 'Attention(Q,K,V) = softmax(QKᵀ / √d_k) · V',
       table: {
         headers: ['Component', 'Role'],
         rows: [
           ['Self-Attention', 'Each token attends to all others — captures global context in one step'],
           ['Multi-Head Attention', 'Run attention h times in parallel — captures different relationship types'],
-          ['Feed-Forward', 'Per-token dense layer — adds capacity'],
-          ['Positional Encoding', 'Injects order info (no recurrence)'],
-          ['Layer Norm + Residual', 'Enables training very deep networks stably'],
+          ['Feed-Forward', 'Per-token dense layer — adds non-linear capacity'],
+          ['Positional Encoding', 'Injects order information (no recurrence needed)'],
+          ['Layer Norm + Residual', 'Enables stable training of very deep networks'],
         ]
       },
       keyPoints: [
-        { color: 'blue',   text: 'Key advantage over RNN/LSTM: fully parallel — no sequential dependency. Scales massively on GPUs/TPUs.' },
-        { color: 'green',  text: 'Scaling laws (Chinchilla): loss ∝ (parameters, tokens)^−α. Optimal: ~20 training tokens per parameter.' },
-      ]
+        { color: 'blue',   text: 'Key advantage over RNN/LSTM: fully parallel — no sequential dependency. Scales massively on GPU/TPU clusters.' },
+        { color: 'green',  text: 'Chinchilla scaling laws: optimal training uses ~20 tokens per parameter. A 7B model needs ~140B training tokens for compute-optimal performance.' },
+      ],
+      wikiSource: ['wiki/concepts/Transformer Architecture.md']
     },
     {
       num: '03',
       title: 'KV Cache & Context Windows',
       body: 'During autoregressive inference, the model recomputes Key and Value matrices for every prior token at each step. <strong>KV Caching</strong> stores these to avoid redundant computation — trading memory for speed.',
-      formula: 'KV Cache (GB) = 2 × L × H × C × bytes / 1024³',
+      formula: 'KV Cache (GB) = 2 × L × H × C × bytes_per_element / 1024³',
       table: {
         headers: ['Variable', 'Meaning', 'LLaMA-3 8B example'],
         rows: [
           ['L', 'Number of layers', '32'],
           ['H', 'Hidden size', '4096'],
-          ['C', 'Context length', '128 000 tokens'],
-          ['bytes', '2 (fp16) or 4 (fp32)', '2 (fp16)'],
+          ['C', 'Context length (tokens)', '128,000'],
+          ['bytes', 'fp16 = 2, fp32 = 4', '2 (fp16)'],
           ['Result', 'Total KV cache', '≈ 64 GB'],
         ]
       },
       keyPoints: [
-        { color: 'blue',   text: 'Prompt caching (Anthropic/OpenAI): cache the expensive prefix of a long system prompt. Reduces latency and cost by >80% on repeated calls.' },
-        { color: 'green',  text: 'Grouped-Query Attention (GQA) and Multi-Query Attention (MQA) reduce KV cache size by sharing K,V heads across query heads.' },
-        { color: 'yellow', text: 'Context length has exploded: GPT-3 (4k) → Claude 3.5 (200k) → Gemini 1.5 (1M). Larger context = larger KV cache = more memory pressure.' },
+        { color: 'blue',   text: 'Prompt caching (Anthropic / OpenAI): cache expensive system prompt prefixes. Reduces latency and cost by >80% on repeated API calls with the same prefix.' },
+        { color: 'green',  text: 'GQA / MQA (Grouped / Multi-Query Attention): reduce KV cache size by sharing K,V heads across query heads — key technique behind efficient long-context models.' },
+        { color: 'yellow', text: 'Context length explosion: GPT-3 (4k) → Claude 3.5 Sonnet (200k) → Gemini 1.5 (1M tokens). Larger context = larger KV cache = more GPU memory pressure.' },
       ],
-      calc: 'kvcache'
+      calc: 'kvcache',
+      wikiSource: ['wiki/concepts/KV Caching.md', 'wiki/concepts/Context Window Optimization.md']
     },
     {
       num: '04',
       title: 'Agentic AI & 12-Factor Agents',
-      body: 'LLMs as <strong>agents</strong> — not just chatbots — use tools, maintain state, and complete multi-step tasks autonomously. Reliability is the core challenge.',
+      body: 'LLMs as <strong>agents</strong> — not just chatbots — use tools, maintain state, and complete multi-step tasks autonomously. Reliability is the core engineering challenge.',
       table: {
         headers: ['12-Factor Principle', 'Why it matters'],
         rows: [
           ['Natural language to tool calls', 'LLM decides which tool to invoke based on context'],
-          ['Own your control flow', 'Avoid infinite agent loops; keep humans in the loop at checkpoints'],
+          ['Own your control flow', 'Avoid infinite loops; gate on humans at key checkpoints'],
           ['Stateless where possible', 'Explicit state management prevents context drift'],
-          ['Small, focused agents', 'Single-responsibility reduces failure surface'],
-          ['Structured outputs', 'JSON/schema contracts between LLM and downstream systems'],
-          ['Human-in-the-loop', 'Pause for human approval on irreversible or high-risk actions'],
+          ['Small, focused agents', 'Single-responsibility reduces failure surface area'],
+          ['Structured outputs', 'JSON/schema contracts make LLM output machine-readable'],
+          ['Human-in-the-loop', 'Pause for approval on irreversible or high-risk actions'],
         ]
       },
       keyPoints: [
         { color: 'blue',   text: '"Why Johnny Can\'t Use Agents" (CMU 2025): the reliability gap is the #1 barrier. Agents fail not because LLMs are wrong, but because system design is fragile.' },
-        { color: 'green',  text: 'Vibe Coding: human as director, AI as executor. Natural language intent → Claude Code → working software. The human reviews and redirects, not codes line-by-line.' },
-      ]
+        { color: 'green',  text: 'Vibe Coding (Karpathy): human as director, AI as executor. Natural language intent → Claude Code → working software. Human reviews and redirects, not codes line-by-line.' },
+      ],
+      wikiSource: ['wiki/concepts/12-Factor Agents.md', 'wiki/concepts/Agentic AI.md', 'wiki/concepts/Human-in-the-loop.md', 'wiki/concepts/Vibe Coding.md']
     },
     {
       num: '05',
       title: 'GraphRAG & Knowledge Architectures',
-      body: 'Standard RAG retrieves chunks from a vector store. <strong>GraphRAG</strong> builds a knowledge graph first — enabling multi-hop reasoning across interconnected entities.',
+      body: 'Standard RAG retrieves text chunks from a vector store. <strong>GraphRAG</strong> first builds a knowledge graph — enabling multi-hop reasoning across interconnected entities.',
       table: {
         headers: ['Approach', 'How it works', 'Best for'],
         rows: [
@@ -367,53 +380,54 @@ window.TOPICS = [
         ]
       },
       keyPoints: [
-        { color: 'blue',   text: 'Karpathy\'s insight: RAG has to re-synthesize every query. A compiled wiki pays the synthesis cost once and serves it instantly — like compiled vs interpreted code.' },
-        { color: 'yellow', text: 'Wiki page types in this repo: concepts/ (ideas), entities/ (orgs/people), infrastructure/ (systems). Organized by TYPE to prevent domain silos.' },
-      ]
+        { color: 'blue',   text: 'Karpathy\'s key insight: RAG re-synthesizes on every query. A compiled wiki pays the synthesis cost once and serves it instantly — like compiled vs. interpreted code.' },
+        { color: 'yellow', text: 'This repo\'s wiki organizes pages by TYPE (concepts/, entities/, infrastructure/) — not domain — to prevent silos and allow natural cross-domain linking.' },
+      ],
+      wikiSource: ['wiki/concepts/GraphRAG.md']
     },
   ],
 
   questions: [
     {cat:"Software 3.0",
      q:"What best defines 'Software 3.0' in Karpathy's framework?",
-     opts:["The third generation of Windows OS","A paradigm where natural language + LLMs replace traditional explicit code","Software with 3 billion parameters","OpenAI's third GPT version"],ans:1,
-     exp:"<strong>Software 3.0</strong> is a development paradigm where natural language serves as the primary interface and LLMs act as the runtime. 'The hot new programming language is English.'"},
+     opts:["The third generation of the Windows OS","A paradigm where natural language + LLMs replace traditional explicit code","Software with 3 billion parameters","OpenAI's third GPT version"],ans:1,
+     exp:"<strong>Software 3.0</strong> is a development paradigm where natural language serves as the primary interface and LLMs act as the programmable runtime. Karpathy: 'The hot new programming language is English.'"},
     {cat:"Transformer",
-     q:"What was the key architectural innovation of the Transformer (2017)?",
-     opts:["Recurrent LSTM layers","Convolutional filters for text","Self-attention enabling fully parallel sequence processing","Deep residual connections"],ans:2,
-     exp:"<strong>Self-attention</strong> allows every token to attend to all others in a single step — fully parallel, not sequential. This is what made scaling on GPUs/TPUs practical."},
+     q:"What was the key architectural innovation of the Transformer (Vaswani et al., 2017)?",
+     opts:["Recurrent LSTM layers for sequential memory","Convolutional filters adapted for text","Self-attention enabling fully parallel sequence processing","Deep residual connections for gradient flow"],ans:2,
+     exp:"<strong>Self-attention</strong> allows every token to attend to all others in a single step — fully parallel, not sequential. This is what made scaling on GPUs/TPUs practical and enabled modern LLMs."},
     {cat:"KV Cache",
      q:"What is the primary purpose of KV Caching in LLM inference?",
-     opts:["Cache HTTP API responses from the model provider","Store Key-Value matrices from prior tokens to avoid recomputing them each step","Compress model weights to reduce VRAM","Index the training dataset for retrieval"],ans:1,
-     exp:"<strong>KV Caching</strong> stores the Key and Value matrices already computed for prior tokens, so the model only processes new tokens at each generation step — trading memory for speed."},
+     opts:["Cache HTTP API responses from the model provider","Store Key-Value matrices from prior tokens to avoid recomputing them each step","Compress model weights to reduce VRAM","Index the training dataset for faster retrieval"],ans:1,
+     exp:"<strong>KV Caching</strong> stores the Key and Value matrices already computed for prior tokens, so the model only needs to process new tokens at each generation step — trading memory for inference speed."},
     {cat:"LLM Wiki",
-     q:"In Karpathy's LLM Wiki architecture (this repo), what role does the /wiki/ layer play?",
-     opts:["Stores immutable raw source documents","Contains LLM-generated, incrementally updated markdown synthesis pages","Holds configuration and schema for LLM prompts","Logs all user queries for analytics"],ans:1,
-     exp:"The <strong>/wiki/ layer</strong> is fully LLM-owned: summaries, entity pages, concept pages, comparisons. The LLM reads from raw sources but only writes to the wiki layer."},
+     q:"In Karpathy's LLM Wiki architecture, what role does the /wiki/ layer play?",
+     opts:["Stores immutable raw source documents the LLM reads","Contains LLM-generated, incrementally maintained markdown synthesis pages","Holds configuration and schema (prompts) that guide the LLM","Logs all user queries for analytics"],ans:1,
+     exp:"The <strong>/wiki/ layer</strong> is fully LLM-owned: summaries, entity pages, concept pages, comparisons. The LLM reads raw sources but only writes to the wiki layer, following the schema in /README."},
     {cat:"Agents",
      q:"What problem does the 12-Factor Agents methodology primarily address?",
-     opts:["12 compliance requirements for deploying AI","Applying cloud-native engineering principles to overcome the reliability gap in LLM agents","12 prompt engineering templates for production","Multi-model routing and load balancing"],ans:1,
-     exp:"<strong>12-Factor Agents</strong> applies cloud-native software principles (explicit state, small focused components, human-in-the-loop, structured outputs) to make LLM agents production-reliable."},
+     opts:["12 compliance requirements for deploying AI in production","Applying cloud-native engineering principles to overcome the reliability gap in LLM agents","12 prompt engineering templates for production systems","Multi-model routing and load balancing"],ans:1,
+     exp:"<strong>12-Factor Agents</strong> applies cloud-native software principles (explicit state, small focused components, HITL, structured outputs) to make LLM agents production-reliable — addressing the 'reliability gap'."},
     {cat:"LLM Wiki",
      q:"Why does Karpathy's wiki organize pages 'by type, not domain'?",
-     opts:["It is technically simpler to implement","Domain names change frequently over time","To prevent domain silos so pages remain discoverable peers that link naturally across topics","To match Obsidian's default folder limit"],ans:2,
-     exp:"Organizing by type (<strong>concepts/, entities/, infrastructure/</strong>) prevents domain silos. A page about JPX is in <em>entities/</em>, findable from any domain — not buried in a financial systems subfolder."},
+     opts:["It is technically simpler to implement in file systems","Domain names change frequently and become stale","To prevent domain silos — pages remain discoverable peers that link naturally across topics","To match Obsidian's default folder structure requirements"],ans:2,
+     exp:"Organizing by type (<strong>concepts/, entities/, infrastructure/</strong>) prevents domain silos. A page on JPX lives in entities/ and is findable from any domain — not buried in a financial-systems subfolder."},
     {cat:"Vibe Coding",
      q:"What best describes 'Vibe Coding'?",
-     opts:["Writing code while listening to music for creativity","Human as director using natural language to command AI as executor — reviewing and redirecting, not writing line-by-line","Informal, undocumented programming style","A React component architecture pattern"],ans:1,
-     exp:"<strong>Vibe Coding</strong> (Karpathy): the human provides high-level direction in natural language; the AI (e.g. Claude Code) executes. The human's job shifts from writing code to reviewing and steering."},
+     opts:["Writing code while listening to music for creative flow","Human as director using natural language to command AI as executor — reviewing and redirecting rather than writing line-by-line","Informal, undocumented rapid prototyping","A React component architecture pattern"],ans:1,
+     exp:"<strong>Vibe Coding</strong> (Karpathy): the human provides high-level direction in natural language; the AI (e.g. Claude Code) executes. The human's role shifts from writing code to directing, reviewing, and steering outcomes."},
     {cat:"Architecture",
      q:"What is Mixture-of-Experts (MoE)?",
-     opts:["An ensemble of multiple LLM API providers","A neural architecture that activates only a subset of its parameters (experts) for each input token","A multi-agent debate framework for consensus","A technique for mixing training datasets from different domains"],ans:1,
-     exp:"<strong>MoE</strong> routes each token to a small subset of 'expert' FFN layers, keeping compute per token constant even as total parameter count grows massively (e.g. GPT-4, Mixtral, DeepSeek)."},
+     opts:["An ensemble of multiple LLM API providers","A neural architecture that activates only a subset of its parameters (experts) for each input token","A multi-agent debate framework for building consensus","A technique for mixing training datasets from different domains"],ans:1,
+     exp:"<strong>MoE</strong> routes each token to a small subset of 'expert' feed-forward layers, keeping compute per token constant even as total parameter count grows massively (used in GPT-4, Mixtral, DeepSeek)."},
     {cat:"Retrieval",
      q:"What distinguishes GraphRAG from standard vector RAG?",
-     opts:["GraphRAG uses larger embedding models for better recall","GraphRAG builds a knowledge graph + community summaries, enabling multi-hop relational reasoning","GraphRAG is faster because it skips the embedding step","GraphRAG only works with tabular/structured data"],ans:1,
-     exp:"<strong>GraphRAG</strong> (Microsoft) first builds an entity knowledge graph, then uses LLM-generated community summaries for retrieval. This enables questions that require reasoning across multiple interconnected entities."},
+     opts:["GraphRAG uses larger embedding models for better recall","GraphRAG builds a knowledge graph and community summaries, enabling multi-hop relational reasoning","GraphRAG is faster because it skips the embedding step","GraphRAG only works with structured tabular data"],ans:1,
+     exp:"<strong>GraphRAG</strong> (Microsoft) first builds an entity knowledge graph, then uses LLM-generated community summaries. This enables questions requiring reasoning across multiple interconnected entities — not just semantic similarity."},
     {cat:"Agents",
      q:"What is Human-in-the-loop (HITL) primarily used for in agentic systems?",
-     opts:["To replace all AI decisions with human ones","To collect training labels efficiently","To integrate human approval at key checkpoints — especially before irreversible or high-risk actions","To bypass automated pipelines entirely"],ans:2,
-     exp:"<strong>HITL</strong> integrates human intervention at specific decision points — not to replace AI, but to ensure high-stakes or irreversible actions get human approval. Central to the 12-Factor Agents design."},
+     opts:["To replace all AI decisions with human ones","To efficiently collect training labels at scale","To integrate human approval at key checkpoints — especially before irreversible or high-risk actions","To bypass automated pipelines when they fail"],ans:2,
+     exp:"<strong>HITL</strong> integrates human intervention at specific decision points — not to replace AI, but to ensure high-stakes or irreversible actions receive human approval. A core principle of the 12-Factor Agents methodology."},
   ]
 },
 
@@ -422,44 +436,41 @@ window.TOPICS = [
 ══════════════════════════════════════════════════════════════ */
 
 // ── TOPIC_TEMPLATE ──────────────────────────────────────────
-// Uncomment, fill in, and add to window.TOPICS above.
 /*
 {
-  id: 'my-topic',                     // unique kebab-case id
-  title: 'Topic Title',               // shown on home card
-  icon: '📘',                         // emoji icon
-  color: '#a78bfa',                   // accent color (hex)
-  description: 'One-line description',
-  slideCount: 5,                      // update when done
+  id: 'my-topic',
+  title: 'Topic Title',
+  icon: '📘',
+  color: '#a78bfa',
+  description: 'One-line description shown on the home card.',
+  slideCount: 5,
   wikiPages: [
-    // List wiki pages Claude Code should read for context:
     'wiki/concepts/My Concept.md',
     'wiki/entities/My Entity.md',
   ],
   slides: [
-    // SLIDE_TEMPLATE:
     {
       num: '01',
       title: 'Slide Title',
-      body: 'Explanation text. Use <strong>bold</strong> for key terms.',
-      formula: null,            // optional: 'Formula = A × B'
-      table: null,              // optional: { headers: ['Col1','Col2'], rows: [['a','b']] }
-      riskMap: false,           // set true only for the finance risk-map slide
-      keyPoints: [              // optional: { color: 'blue'|'green'|'yellow'|'red', text: '...' }
-        { color: 'blue', text: 'Key insight here' }
+      body: 'Explanation. Use <strong>bold</strong> for key terms.',
+      formula: null,
+      table: null,
+      riskMap: false,
+      keyPoints: [
+        { color: 'blue', text: 'Key insight' }
       ],
-      calc: null,               // optional: 'var'|'el'|'lcr'|'basel'|'raroc'|'kvcache'|'sw30'
+      calc: null,
+      wikiSource: ['wiki/concepts/My Concept.md'],
     },
   ],
   questions: [
-    // QUESTION_TEMPLATE:
     {
-      cat: 'Category Label',    // shown as badge
-      q: 'Question text?',
-      hint: 'Optional hint',    // remove if not needed
-      opts: ['Option A','Option B','Option C','Option D'],
-      ans: 0,                   // index of correct answer (0-based)
-      exp: 'Explanation with <strong>HTML</strong> allowed.',
+      cat: 'Category',
+      q: 'Question?',
+      hint: 'Optional hint',
+      opts: ['A','B','C','D'],
+      ans: 0,
+      exp: 'Explanation with <strong>key term</strong> highlighted.',
     },
   ]
 },

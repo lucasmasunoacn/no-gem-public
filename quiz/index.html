@@ -174,6 +174,12 @@ main{max-width:1020px;margin:0 auto;padding:28px 18px}
 .cw{height:165px;margin-top:10px}
 .cw-note{font-size:.64rem;color:var(--m2);text-align:center;margin-top:4px}
 
+/* Wiki source links */
+.wiki-src{font-size:.68rem;color:var(--m2);margin-top:14px;padding-top:10px;
+  border-top:1px dashed var(--brd)}
+.wiki-src a{color:var(--m2);text-decoration:underline;text-underline-offset:2px}
+.wiki-src a:hover{color:var(--acc)}
+
 /* Slide footer */
 .sl-foot{
   display:flex;align-items:center;justify-content:space-between;
@@ -442,6 +448,12 @@ function nextS() { const l=(activeTopic.slides||[]).length; if(activeSlide<l-1) 
 
 /* ── Slide renderer ─────────────────────────────────────── */
 function renderSlide(s) {
+  const wikiLinks = (s.wikiSource||[]).map(p => {
+    const name = p.split('/').pop().replace('.md','');
+    const url  = 'https://github.com/lucasmasunoacn/obsidian/blob/main/'+p.replace(/ /g,'%20');
+    return `<a href="${url}" target="_blank">${name}</a>`;
+  }).join(' · ');
+
   const left = `
     <div>
       <div class="s-num">SLIDE ${s.num}</div>
@@ -451,6 +463,7 @@ function renderSlide(s) {
       ${s.riskMap ? renderRiskMap() : ''}
       ${s.table   ? renderTable(s.table) : ''}
       ${(s.keyPoints||[]).map(k=>`<div class="kp ${k.color||''}">${k.text}</div>`).join('')}
+      ${wikiLinks ? `<div class="wiki-src">📂 ${wikiLinks}</div>` : ''}
     </div>`;
 
   if (s.calc) {
