@@ -9,13 +9,30 @@ This file tells Claude Code how to extend the quiz.
 
 ```
 quiz/
-├── index.html   ← App shell. Do NOT edit unless adding a new calc type.
-├── topics.js    ← ALL quiz content. This is what you edit.
+├── index.html   ← App shell + quiz/slides. Edit only for new calc types or app features.
+├── topics.js    ← ALL quiz content (window.TOPICS). This is what you usually edit.
+├── vocab.html   ← Standalone Vocabulary Dictionary page (search + category filter).
+├── vocab.js     ← Vocabulary terms (window.VOCAB). Edit to add/remove glossary terms.
 └── CLAUDE.md    ← This file.
 ```
 
 `index.html` reads `window.TOPICS` from `topics.js` and renders everything dynamically.
 A new entry in `TOPICS` automatically creates a new card on the home screen.
+
+### Vocabulary dictionary (`vocab.html` + `vocab.js`)
+
+`vocab.html` is a separate page (linked from the header as **📚 Vocabulary**) that reads
+`window.VOCAB` from `vocab.js`. Each entry: `{ term, full?, cat, def, wiki? }`. `def` allows
+`<strong>`/`<em>`; `wiki` is a path into the obsidian repo (renders a clickable 📂 source link —
+**only point it at a page that actually exists**, or omit it). Terms are grouped by `cat` and the
+filter chips are generated from the distinct `cat` values, so adding a new category is automatic.
+
+### Hiding topics (no code needed by the user)
+
+The home screen has an **⚙️ Manage topics** mode: each card gets a ✕ Hide / ↩ Unhide toggle.
+Hidden topic ids are stored in `localStorage['quiz-hidden-topics']` — per-browser and reversible,
+**nothing is deleted from `topics.js`**. The theme toggle shares `localStorage['quiz-theme']` across
+both pages. Home-card wiki sources are clickable links to the obsidian repo.
 
 ---
 

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Second Brain — Vocabulary</title>
+<style>
+/* ── THEME TOKENS (shared with index.html) ─────────────── */
+:root{
+  --bg:#f6f8fa;--surf:#ffffff;--card:#ffffff;--brd:#d1d5db;
+  --acc:#3b82f6;--grn:#10b981;--red:#ef4444;--yel:#f59e0b;--pur:#7c3aed;
+  --txt:#111827;--m:#6b7280;--m2:#9ca3af;
+  --sh:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.06);
+  --sh-lg:0 4px 16px rgba(0,0,0,.1);
+}
+[data-theme="dark"]{
+  --bg:#08101f;--surf:#101827;--card:#18202e;--brd:#253040;
+  --txt:#f1f5f9;--m:#64748b;--m2:#94a3b8;
+  --sh:0 1px 3px rgba(0,0,0,.4);--sh-lg:0 4px 16px rgba(0,0,0,.5);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+  background:var(--bg);color:var(--txt);min-height:100vh;
+  transition:background .25s,color .25s}
+a{color:var(--acc);text-decoration:none}
+strong{font-weight:700}em{color:var(--pur);font-style:normal;font-family:monospace;font-size:.95em}
+
+/* ── HEADER ───────────────────────────────────────────── */
+header{
+  background:var(--surf);border-bottom:1px solid var(--brd);
+  padding:14px 24px;display:flex;align-items:center;gap:12px;
+  position:sticky;top:0;z-index:100;box-shadow:var(--sh)
+}
+.logo{font-size:1.1rem;font-weight:800;color:var(--acc);flex:1}
+.logo span{color:var(--txt);font-weight:400;font-size:.85rem;margin-left:8px}
+.hbtn{
+  padding:6px 12px;border-radius:7px;border:1px solid var(--brd);
+  background:none;color:var(--m);cursor:pointer;font-size:.8rem;
+  transition:all .15s;white-space:nowrap;text-decoration:none
+}
+.hbtn:hover{background:var(--brd);color:var(--txt)}
+
+main{max-width:1020px;margin:0 auto;padding:28px 18px}
+
+/* ── HERO + CONTROLS ──────────────────────────────────── */
+.hero{text-align:center;padding:24px 0 16px}
+.hero h2{font-size:1.6rem;font-weight:800;margin-bottom:8px}
+.hero p{color:var(--m);font-size:.9rem;max-width:560px;margin:0 auto}
+
+.controls{position:sticky;top:57px;background:var(--bg);padding:14px 0 10px;z-index:50}
+.searchbox{
+  width:100%;background:var(--card);border:1px solid var(--brd);border-radius:10px;
+  padding:11px 14px;color:var(--txt);font-size:.92rem;box-shadow:var(--sh)
+}
+.searchbox:focus{outline:none;border-color:var(--acc)}
+.chips{display:flex;gap:7px;flex-wrap:wrap;margin-top:11px}
+.chip{
+  padding:5px 12px;border-radius:18px;border:1px solid var(--brd);background:var(--card);
+  color:var(--m);cursor:pointer;font-size:.76rem;font-weight:600;transition:all .15s;white-space:nowrap
+}
+.chip:hover{border-color:var(--acc)}
+.chip.active{background:var(--acc);color:#fff;border-color:var(--acc)}
+.count{font-size:.74rem;color:var(--m2);margin-top:9px}
+
+/* ── GROUPS + ENTRIES ─────────────────────────────────── */
+.group{margin-top:22px}
+.group-h{font-size:.82rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--acc);margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid var(--brd)}
+.vlist{display:grid;gap:10px}
+.vcard{
+  background:var(--card);border:1px solid var(--brd);border-radius:11px;
+  padding:14px 16px;box-shadow:var(--sh)
+}
+.vtop{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:5px}
+.vterm{font-size:1rem;font-weight:700}
+.vfull{font-size:.78rem;color:var(--m2)}
+.vbadge{margin-left:auto;font-size:.64rem;padding:2px 8px;border-radius:10px;
+  background:var(--bg);border:1px solid var(--brd);color:var(--m);font-weight:600;white-space:nowrap}
+[data-theme="dark"] .vbadge{background:var(--surf)}
+.vdef{font-size:.84rem;color:var(--m);line-height:1.6}
+.vwiki{display:inline-block;margin-top:8px;font-size:.7rem;color:var(--m2);
+  text-decoration:underline;text-underline-offset:2px}
+.vwiki:hover{color:var(--acc)}
+.empty{text-align:center;color:var(--m2);font-size:.9rem;padding:40px 0}
+mark{background:rgba(245,158,11,.35);color:inherit;border-radius:3px;padding:0 1px}
+
+footer{text-align:center;padding:24px;font-size:.72rem;color:var(--m2);
+  border-top:1px solid var(--brd);margin-top:40px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🧠 Second Brain
+    <span>Vocabulary</span>
+  </div>
+  <a class="hbtn" href="index.html">← Quiz</a>
+  <button class="hbtn" id="theme-btn" onclick="toggleTheme()" title="Toggle light/dark">🌙 Dark</button>
+</header>
+
+<main>
+  <div class="hero">
+    <h2>📚 Vocabulary Dictionary</h2>
+    <p>Key terms from the <a href="https://github.com/lucasmasunoacn/obsidian" target="_blank">Karpathy LLM Wiki</a> — finance, market infrastructure, and AI/LLM. Search or filter, and follow any term back to its source page.</p>
+  </div>
+
+  <div class="controls">
+    <input class="searchbox" id="search" type="search" placeholder="🔍 Search terms and definitions…" oninput="render()" autocomplete="off">
+    <div class="chips" id="chips"></div>
+    <div class="count" id="count"></div>
+  </div>
+
+  <div id="results"></div>
+</main>
+
+<footer>
+  Pulled from the <a href="https://github.com/lucasmasunoacn/obsidian" target="_blank">Karpathy LLM Wiki</a> ·
+  Add terms via <a href="vocab.js" target="_blank">vocab.js</a> ·
+  Back to the <a href="index.html">Quiz</a>
+</footer>
+
+<script src="vocab.js"></script>
+<script>
+/* ── THEME (shared key with the quiz) ─────────────────── */
+const root = document.documentElement;
+const themeBtn = document.getElementById('theme-btn');
+const stored = localStorage.getItem('quiz-theme');
+const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+const initTheme = stored || (systemDark ? 'dark' : 'light');
+root.setAttribute('data-theme', initTheme);
+themeBtn.textContent = initTheme === 'dark' ? '☀️ Light' : '🌙 Dark';
+function toggleTheme(){
+  const t = root.getAttribute('data-theme')==='dark' ? 'light' : 'dark';
+  root.setAttribute('data-theme', t);
+  themeBtn.textContent = t==='dark' ? '☀️ Light' : '🌙 Dark';
+  localStorage.setItem('quiz-theme', t);
+}
+
+/* ── STATE ────────────────────────────────────────────── */
+const VOCAB = (window.VOCAB || []).slice().sort((a,b)=>a.term.localeCompare(b.term,'en'));
+const WIKI_BASE = window.VOCAB_WIKI_BASE || '';
+const CATS = [...new Set(VOCAB.map(v=>v.cat))];
+let activeCat = 'all';
+
+/* ── FILTER CHIPS ─────────────────────────────────────── */
+function buildChips(){
+  const chips = [['all', `All (${VOCAB.length})`]]
+    .concat(CATS.map(c => [c, `${c} (${VOCAB.filter(v=>v.cat===c).length})`]));
+  document.getElementById('chips').innerHTML = chips.map(([id,label]) =>
+    `<button class="chip${id===activeCat?' active':''}" onclick="setCat(${JSON.stringify(id).replace(/"/g,'&quot;')})">${label}</button>`
+  ).join('');
+}
+function setCat(c){ activeCat = c; buildChips(); render(); }
+
+/* ── HIGHLIGHT MATCHES ────────────────────────────────── */
+function esc(s){ return s.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }
+function hl(text, q){
+  if(!q) return text;
+  // highlight only outside existing HTML tags
+  return text.replace(new RegExp('(?![^<]*>)(' + q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + ')','gi'), '<mark>$1</mark>');
+}
+
+/* ── RENDER ───────────────────────────────────────────── */
+function render(){
+  const q = document.getElementById('search').value.trim();
+  const ql = q.toLowerCase();
+  let list = VOCAB.filter(v => activeCat==='all' || v.cat===activeCat);
+  if(ql){
+    list = list.filter(v =>
+      v.term.toLowerCase().includes(ql) ||
+      (v.full||'').toLowerCase().includes(ql) ||
+      v.def.toLowerCase().includes(ql));
+  }
+  document.getElementById('count').textContent =
+    `${list.length} term${list.length===1?'':'s'}${q?` matching “${q}”`:''}${activeCat!=='all'?` in ${activeCat}`:''}`;
+
+  if(!list.length){
+    document.getElementById('results').innerHTML = `<div class="empty">No terms found. Try a different search or category.</div>`;
+    return;
+  }
+
+  // group by category (preserve category order), each sorted alphabetically
+  const groups = (activeCat==='all' ? CATS : [activeCat])
+    .map(cat => [cat, list.filter(v=>v.cat===cat)])
+    .filter(([,items]) => items.length);
+
+  document.getElementById('results').innerHTML = groups.map(([cat, items]) => `
+    <div class="group">
+      <div class="group-h">${cat}</div>
+      <div class="vlist">
+        ${items.map(v => {
+          const wikiLink = v.wiki
+            ? `<a class="vwiki" href="${WIKI_BASE}${v.wiki.replace(/ /g,'%20')}" target="_blank">📂 ${v.wiki.split('/').pop().replace('.md','')}</a>`
+            : '';
+          return `
+          <div class="vcard">
+            <div class="vtop">
+              <span class="vterm">${hl(esc(v.term), q)}</span>
+              ${v.full?`<span class="vfull">${hl(esc(v.full), q)}</span>`:''}
+              <span class="vbadge">${v.cat}</span>
+            </div>
+            <div class="vdef">${hl(v.def, q)}</div>
+            ${wikiLink}
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`).join('');
+}
+
+/* ── INIT ─────────────────────────────────────────────── */
+buildChips();
+render();
+</script>
+</body>
+</html>
