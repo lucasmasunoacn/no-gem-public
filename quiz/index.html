@@ -66,7 +66,26 @@ main{max-width:1020px;margin:0 auto;padding:28px 18px}
   background:var(--bg);border:1px solid var(--brd);color:var(--m)}
 .tc-wiki{font-size:.7rem;color:var(--m2);margin-bottom:14px}
 .tc-wiki summary{cursor:pointer;user-select:none}
-.tc-wiki li{margin-left:14px;margin-top:2px;font-family:monospace;font-size:.68rem}
+.tc-wiki li{margin-left:14px;margin-top:2px;font-size:.68rem;list-style:none}
+.tc-wiki li a{color:var(--m2);text-decoration:underline;text-underline-offset:2px;
+  font-family:monospace;word-break:break-all}
+.tc-wiki li a:hover{color:var(--acc)}
+
+/* Manage-topics toolbar + hide controls */
+.home-toolbar{display:flex;align-items:center;gap:10px;margin-top:18px;flex-wrap:wrap}
+.home-toolbar .spacer{flex:1}
+.home-toolbar .ht-note{font-size:.74rem;color:var(--m2)}
+.topic-card.manage{cursor:default}
+.topic-card.is-hidden{opacity:.5}
+.tc-hide{
+  position:absolute;top:10px;right:10px;z-index:2;
+  padding:4px 9px;border-radius:7px;border:1px solid var(--brd);
+  background:var(--surf);color:var(--m);cursor:pointer;font-size:.72rem;font-weight:600;
+  transition:all .15s
+}
+.tc-hide:hover{border-color:var(--acc);color:var(--acc)}
+.tc-hide.unhide{border-color:var(--grn);color:var(--grn)}
+.topic-card{position:relative}
 .btn{padding:9px 18px;border-radius:8px;border:none;cursor:pointer;font-size:.86rem;
   font-weight:600;transition:all .2s;display:inline-block}
 .btn-acc{background:var(--acc);color:#fff;width:100%;text-align:center}
@@ -256,6 +275,7 @@ footer{text-align:center;padding:24px;font-size:.72rem;color:var(--m2);
   <div class="logo">🧠 Second Brain
     <span>Karpathy LLM Wiki</span>
   </div>
+  <a class="hbtn" href="vocab.html" title="Vocabulary dictionary">📚 Vocabulary</a>
   <a class="hbtn" id="translate-btn" href="#" onclick="openTranslate(event)" title="Translate page">🌐 Translate</a>
   <button class="hbtn" id="theme-btn" onclick="toggleTheme()" title="Toggle light/dark">🌙 Dark</button>
 </header>
@@ -347,10 +367,44 @@ function toggleTheme() {
 /* ══════════════════════════════════════════════════════════
    HOME SCREEN
 ══════════════════════════════════════════════════════════ */
-function buildHome() {
-  const grid = document.getElementById('topic-grid');
-  grid.innerHTML = (window.TOPICS || []).map(t => `
-    <div class="topic-card" onclick="openTopic('${t.id}')">
+const WIKI_BASE = 'https://github.com/lucasmasunoacn/obsidian/blob/main/';
+let manageMode = false;
+
+function getHidden() {
+  try { return JSON.parse(localStorage.getItem('quiz-hidden-topics') || '[]'); }
+  catch { return []; }
+}
+function setHidden(arr) { localStorage.setItem('quiz-hidden-topics', JSON.stringify([...new Set(arr)])); }
+function toggleHidden(id) {
+  const h = getHidden();
+  setHidden(h.includes(id) ? h.filter(x => x !== id) : [...h, id]);
+  buildHome();
+}
+function toggleManage() { manageMode = !manageMode; buildHome(); }
+function resetHidden() { setHidden([]); buildHome(); }
+
+// Clickable source list → links to the obsidian wiki on GitHub
+function wikiLinks(pages) {
+  return (pages || []).map(p => {
+    const url  = WIKI_BASE + p.replace(/ /g, '%20');
+    const name = p.split('/').pop().replace('.md', '');
+    return `<li><a href="${url}" target="_blank" onclick="event.stopPropagation()" title="${p}">${name}</a></li>`;
+  }).join('');
+}
+
+function topicCard(t) {
+  const hidden = getHidden().includes(t.id);
+  if (hidden && !manageMode) return '';            // hidden topics disappear in normal mode
+  const cls     = `topic-card${manageMode ? ' manage' : ''}${hidden ? ' is-hidden' : ''}`;
+  const onclick = manageMode ? '' : ` onclick="openTopic('${t.id}')"`;
+  const hideBtn = manageMode
+    ? `<button class="tc-hide${hidden ? ' unhide' : ''}" onclick="event.stopPropagation();toggleHidden('${t.id}')">${hidden ? '↩ Unhide' : '✕ Hide'}</button>`
+    : '';
+  const startBtn = manageMode ? ''
+    : `<button class="btn btn-acc" style="background:${t.color}">Start Learning →</button>`;
+  return `
+    <div class="${cls}"${onclick}>
+      ${hideBtn}
       <div class="tc-icon">${t.icon}</div>
       <div class="tc-title">${t.title}</div>
       <div class="tc-desc">${t.description}</div>
@@ -359,18 +413,40 @@ function buildHome() {
         <span class="tc-badge">📝 ${(t.questions||[]).length} questions</span>
       </div>
       <details class="tc-wiki">
-        <summary>📂 ${(t.wikiPages||[]).length} wiki sources</summary>
-        <ul>${(t.wikiPages||[]).map(p=>`<li>${p}</li>`).join('')}</ul>
+        <summary onclick="event.stopPropagation()">📂 ${(t.wikiPages||[]).length} wiki sources</summary>
+        <ul>${wikiLinks(t.wikiPages)}</ul>
       </details>
-      <button class="btn btn-acc" style="background:${t.color}">Start Learning →</button>
-    </div>
-  `).join('') + `
+      ${startBtn}
+    </div>`;
+}
+
+function buildHome() {
+  const topics = window.TOPICS || [];
+  const hidden = getHidden();
+  const hiddenCount = topics.filter(t => hidden.includes(t.id)).length;
+
+  // Toolbar (above the grid) — Manage toggle + hidden count
+  const toolbar = `
+    <div class="home-toolbar">
+      <button class="hbtn" onclick="toggleManage()">${manageMode ? '✓ Done' : '⚙️ Manage topics'}</button>
+      ${manageMode
+        ? `<span class="ht-note">Hide topics you don't want on the home screen — saved in this browser, reversible anytime.</span>
+           ${hiddenCount ? `<span class="spacer"></span><button class="hbtn" onclick="resetHidden()">↺ Show all (${hiddenCount} hidden)</button>` : ''}`
+        : (hiddenCount ? `<span class="ht-note">${hiddenCount} topic${hiddenCount === 1 ? '' : 's'} hidden — ⚙️ Manage to restore</span>` : '')}
+    </div>`;
+  let tb = document.getElementById('home-toolbar');
+  if (tb) tb.remove();
+  document.getElementById('topic-grid')
+    .insertAdjacentHTML('beforebegin', `<div id="home-toolbar">${toolbar}</div>`);
+
+  // Cards
+  const addCard = manageMode ? '' : `
     <div class="topic-card" style="opacity:.55;cursor:default;border-style:dashed">
       <div class="tc-icon">➕</div>
       <div class="tc-title">Add a Topic</div>
       <div class="tc-desc">Edit <code>topics.js</code> following the TOPIC_TEMPLATE. See <code>CLAUDE.md</code> for Claude Code instructions.</div>
-    </div>
-  `;
+    </div>`;
+  document.getElementById('topic-grid').innerHTML = topics.map(topicCard).join('') + addCard;
 }
 
 /* ══════════════════════════════════════════════════════════
