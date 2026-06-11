@@ -7,17 +7,19 @@
 <style>
 /* ── THEME TOKENS (shared with index.html) ─────────────── */
 :root{
-  --bg:#eef0f6;--surf:#ffffff;--card:#ffffff;--brd:#e0e4ee;
+  --bg:#e0e5ec;--surf:#e0e5ec;--card:#e0e5ec;--brd:transparent;--div:#c4ccd8;
   --acc:#5865f2;--grn:#10b981;--red:#ef4444;--yel:#f59e0b;--pur:#7c3aed;
-  --txt:#1a1f2e;--m:#6b7280;--m2:#9ca3af;
-  --sh:4px 4px 12px rgba(40,50,90,.07),-4px -4px 12px rgba(255,255,255,.7);
-  --sh-lg:8px 8px 24px rgba(40,50,90,.12),-6px -6px 18px rgba(255,255,255,.85);
+  --txt:#2d3450;--m:#69718a;--m2:#8a93a6;
+  --d-sh:#a3b1c6;--l-sh:#ffffff;
+  --sh:6px 6px 12px var(--d-sh),-6px -6px 12px var(--l-sh);
+  --sh-lg:9px 9px 20px var(--d-sh),-9px -9px 20px var(--l-sh);
+  --sh-sm:4px 4px 8px var(--d-sh),-4px -4px 8px var(--l-sh);
+  --sh-in:inset 4px 4px 8px var(--d-sh),inset -4px -4px 8px var(--l-sh);
 }
 [data-theme="dark"]{
-  --bg:#1c2030;--surf:#222838;--card:#222838;--brd:#2c3346;
-  --txt:#e8ecf4;--m:#8b93a7;--m2:#9aa3b8;
-  --sh:4px 4px 12px rgba(0,0,0,.40),-4px -4px 12px rgba(255,255,255,.02);
-  --sh-lg:8px 8px 24px rgba(0,0,0,.50),-6px -6px 18px rgba(255,255,255,.03);
+  --bg:#2a2e37;--surf:#2a2e37;--card:#2a2e37;--brd:transparent;--div:#3a3f4b;
+  --txt:#e6e9f0;--m:#9aa3b5;--m2:#7f8799;
+  --d-sh:#1f2228;--l-sh:#353a45;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
@@ -114,6 +116,21 @@ mark{background:rgba(245,158,11,.35);color:inherit;border-radius:3px;padding:0 1
 
 footer{text-align:center;padding:24px;font-size:.72rem;color:var(--m2);
   border-top:1px solid var(--brd);margin-top:40px}
+
+/* ── Neumorphism component layer (raised controls, recessed inputs) ── */
+footer{border-color:var(--div)}
+.group-h{border-bottom-color:var(--div)}
+.searchbox,.searchbox:focus{box-shadow:var(--sh-in)}
+.chip{box-shadow:var(--sh-sm)}
+.chip:active{box-shadow:var(--sh-in)}
+.vbadge{box-shadow:var(--sh-sm)}
+.vq-go{box-shadow:var(--sh-sm)}
+.vq-go:active:not(:disabled){box-shadow:var(--sh-in)}
+.vq-opt{box-shadow:var(--sh-sm)}
+.vq-opt:hover:not(:disabled){box-shadow:var(--sh-in)}
+.vq-btn{box-shadow:var(--sh-sm)}
+.vq-btn:active{box-shadow:var(--sh-in)}
+.vq-prog{background:var(--surf);box-shadow:var(--sh-in)}
 </style>
 </head>
 <body>
