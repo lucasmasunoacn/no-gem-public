@@ -18,6 +18,7 @@
   --sh-lg:10px 10px 22px var(--d-sh),-8px -8px 20px var(--l-sh);
   --sh-sm:4px 4px 9px var(--d-sh),-4px -4px 9px var(--l-sh);
   --sh-in:inset 3px 3px 6px var(--d-sh),inset -3px -3px 6px var(--l-sh);
+  --sh-press:inset 2px 2px 4px var(--d-sh),inset -2px -2px 4px var(--l-sh);
 }
 [data-theme="dark"]{
   --bg:#2a2e37;--surf:#2a2e37;--card:#2a2e37;--brd:transparent;--div:#3a3f4b;
@@ -127,15 +128,14 @@ footer{border-color:var(--div)}
 .hbtn.icon-only{width:38px;height:38px;padding:0;border-radius:50%;display:inline-flex;
   align-items:center;justify-content:center;font-size:1.05rem}
 .chip{box-shadow:var(--sh-sm)}
-.chip:active{box-shadow:var(--sh-in)}
 .vbadge{box-shadow:var(--sh-sm)}
 .vq-go{box-shadow:var(--sh-sm)}
-.vq-go:active:not(:disabled){box-shadow:var(--sh-in)}
 .vq-opt{box-shadow:var(--sh-sm)}
-.vq-opt:hover:not(:disabled){box-shadow:var(--sh-in)}
 .vq-btn{box-shadow:var(--sh-sm)}
-.vq-btn:active{box-shadow:var(--sh-in)}
-.vq-prog{background:var(--surf);box-shadow:var(--sh-in)}
+.vq-opt:hover:not(:disabled){box-shadow:var(--sh)}
+/* Click = a tiny concave press */
+.chip:active,.vq-go:active:not(:disabled),.vq-opt:active:not(:disabled),.vq-btn:active{box-shadow:var(--sh-press)}
+.vq-prog{background:var(--div);box-shadow:none}
 
 /* ── Liquid layer: glass header + controls + fluid flow ── */
 header{

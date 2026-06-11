@@ -23,6 +23,7 @@
   --sh-lg:10px 10px 22px var(--d-sh),-8px -8px 20px var(--l-sh);
   --sh-sm:4px 4px 9px var(--d-sh),-4px -4px 9px var(--l-sh);
   --sh-in:inset 3px 3px 6px var(--d-sh),inset -3px -3px 6px var(--l-sh);
+  --sh-press:inset 2px 2px 4px var(--d-sh),inset -2px -2px 4px var(--l-sh);
 }
 [data-theme="dark"]{
   --bg:#2a2e37;--surf:#2a2e37;--card:#2a2e37;--brd:transparent;--div:#3a3f4b;
@@ -287,10 +288,12 @@ footer{text-align:center;padding:24px;font-size:.72rem;color:var(--m2);
 footer,.wiki-src,.exp-src{border-color:var(--div)}
 .st th,.st td{border-bottom-color:var(--div)}
 .olbl{background:var(--div)}
-.opt{box-shadow:var(--sh-sm);transition:box-shadow .15s,color .15s}
-.opt:hover:not(:disabled){box-shadow:var(--sh-in)}
+.opt{box-shadow:var(--sh-sm);transition:box-shadow .14s ease,transform .12s ease,color .15s}
+.opt:hover:not(:disabled){box-shadow:var(--sh)}
 .btn,.hbtn,.back-btn,.tc-hide,.sdot{box-shadow:var(--sh-sm)}
-.btn:active,.hbtn:active,.back-btn:active,.sdot:active{box-shadow:var(--sh-in)}
+/* Click = a tiny concave press on the convex (raised) elements */
+.btn:active,.hbtn:active,.back-btn:active,.sdot:active,.tc-hide:active,.mbttn:active,
+.opt:active:not(:disabled),.topic-card:active{box-shadow:var(--sh-press)}
 .btn-sec{background:var(--surf)}
 .hbtn.icon-only{width:38px;height:38px;padding:0;border-radius:50%;display:inline-flex;
   align-items:center;justify-content:center;font-size:1.05rem}
