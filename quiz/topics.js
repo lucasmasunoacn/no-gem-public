@@ -968,6 +968,177 @@ window.TOPICS = [
 },
 
 /* ══════════════════════════════════════════════════════════════
+   TOPIC 6 — Financial Quant, Risk & Macro
+   Source wiki: wiki/concepts/Financial Quant Risk Management.md
+══════════════════════════════════════════════════════════════ */
+{
+  id: 'fin-quant',
+  title: 'Financial Quant, Risk & Macro',
+  icon: '🧮',
+  color: '#f59e0b',
+  description: 'Three-office structure, VaR, Black-Scholes Greeks, CVA/XVA, and the 2022–2026 macro cycle',
+  slideCount: 5,
+  wikiPages: [
+    'wiki/concepts/Financial Quant Risk Management.md',
+    'wiki/concepts/Derivatives.md',
+    'wiki/concepts/Capital Markets.md',
+    'wiki/concepts/Value at Risk.md',
+  ],
+
+  slides: [
+    {
+      num: '01',
+      title: 'The Three-Office Model',
+      body: 'Financial institutions divide into three coordinated offices. <strong>Front Office</strong> (traders) generates revenue by taking market positions. <strong>Middle Office</strong> (quants) measures and controls risk using mathematical models. <strong>Back Office</strong> reconciles trades, confirms settlement, and signs off on daily P&L.',
+      formula: null,
+      table: {
+        headers: ['Office', 'Role', 'Key Output'],
+        rows: [
+          ['Front', 'Trade & generate revenue', 'Open positions, raw trade data'],
+          ['Middle', 'Risk quantification & control', 'VaR, CVA, backtesting'],
+          ['Back', 'Settlement & reconciliation', 'Confirmed Mark-to-Market P&L'],
+        ]
+      },
+      riskMap: false,
+      keyPoints: [
+        { color: 'blue', text: 'Quants live in the Middle Office — they build the models that price risk' },
+        { color: 'yellow', text: 'Backtesting = comparing yesterday\'s VaR forecast vs today\'s actual P&L' },
+      ],
+      calc: null,
+      wikiSource: ['wiki/concepts/Financial Quant Risk Management.md'],
+    },
+    {
+      num: '02',
+      title: 'Positions & Mark-to-Market P&L',
+      body: '<strong>Long (+)</strong>: bought an asset — profits if price rises, maximum loss is the amount invested. <strong>Short (−)</strong>: borrowed and sold an asset — profits if price falls, but loss is theoretically <strong>unlimited</strong> if price rises. The short seller must also compensate the lender for any dividends or interest paid during the hold. <strong>Mark-to-Market (MTM) P&L</strong> is the unrealised gain/loss valued at today\'s market price — a large negative MTM triggers a <strong>margin call</strong>.',
+      formula: null,
+      table: null,
+      riskMap: false,
+      keyPoints: [
+        { color: 'red', text: 'Short position: unlimited downside — price rises are uncapped losses' },
+        { color: 'green', text: 'MTM P&L = unrealised; Realised P&L = locked in on close/settlement' },
+      ],
+      calc: null,
+      wikiSource: ['wiki/concepts/Financial Quant Risk Management.md'],
+    },
+    {
+      num: '03',
+      title: 'VaR, Volatility Models & Bond Math',
+      body: '<strong>Value at Risk (VaR)</strong> answers: "At 99% confidence, what is the worst daily loss?" Formula: <code>VaR = z × σ × V × √t</code>. <strong>Implied Volatility (IV)</strong> is back-solved from option market prices — the market\'s forecast of future uncertainty. <strong>GARCH</strong> captures volatility clustering: rough days tend to cluster. <strong>Convexity</strong> is the second-order correction to bond duration — it accounts for the curvature of the price-yield curve when rates move sharply.',
+      formula: 'VaR = z × σ × V × √t',
+      table: {
+        headers: ['Model', 'Captures'],
+        rows: [
+          ['Historical Vol (HV)', 'Past price dispersion via EWMA'],
+          ['Implied Vol (IV)', 'Market\'s forward uncertainty (from options)'],
+          ['GARCH', 'Volatility clustering — rough periods persist'],
+          ['Convexity', 'Bond price curvature beyond linear duration'],
+        ]
+      },
+      riskMap: false,
+      keyPoints: [
+        { color: 'blue', text: 'IV is forward-looking; HV is backward-looking' },
+        { color: 'yellow', text: 'Higher convexity = better price behaviour for bond investors when rates move' },
+      ],
+      calc: 'var',
+      wikiSource: ['wiki/concepts/Financial Quant Risk Management.md', 'wiki/concepts/Value at Risk.md'],
+    },
+    {
+      num: '04',
+      title: 'Black-Scholes & CVA',
+      body: 'The <strong>Black-Scholes equation</strong> prices European options: <code>C = S·N(d₁) − K·e^(−rT)·N(d₂)</code>. Risk sensitivities (Greeks): <strong>Delta (Δ)</strong> = price sensitivity per £1 move; <strong>Gamma (Γ)</strong> = rate of change of delta; <strong>Vega (ν)</strong> = sensitivity to implied volatility changes. <strong>CVA</strong> (Credit Valuation Adjustment) subtracts the present value of expected counterparty default losses: <code>CVA = (1−R) × ∫EE(t)·dPD(t)</code>, where EE = Expected Exposure and PD = default probability from CDS spreads.',
+      formula: 'CVA = (1 − R) × ∫₀ᵀ EE(t) · dPD(t)',
+      table: {
+        headers: ['Greek', 'Measures'],
+        rows: [
+          ['Delta (Δ)', '£1 move in underlying → option price change'],
+          ['Gamma (Γ)', 'Rate of change of Delta (acceleration)'],
+          ['Vega (ν)', 'IV change → option price change'],
+          ['Theta (Θ)', 'Daily time decay'],
+        ]
+      },
+      riskMap: false,
+      keyPoints: [
+        { color: 'red', text: 'CVA was mandated post-Lehman — counterparty default risk must be priced in' },
+        { color: 'blue', text: 'CDS spread = annualised default insurance premium (in basis points)' },
+      ],
+      calc: null,
+      wikiSource: ['wiki/concepts/Financial Quant Risk Management.md', 'wiki/concepts/Derivatives.md'],
+    },
+    {
+      num: '05',
+      title: 'Macro Cycle 2022–2026',
+      body: 'The Fed\'s aggressive hiking (2022–2023) drove bond prices sharply lower — exposing banks like <strong>SVB</strong> that held large long-duration bond portfolios to catastrophic MTM losses. Japan\'s <strong>YCC</strong> (Yield Curve Control) kept its 10-year rate near 0% while the US hit 5.25%, widening the rate differential to 525 bps and driving USD/JPY to ~160. The <strong>inverted yield curve</strong> (short rates > long rates) is a classic recession signal. By 2026, BOJ rate hikes and Fed cuts narrowed the spread to ~2.5%, pulling the yen back toward 135.',
+      formula: 'E[Δe] ≈ i_US − i_JP  (Interest Rate Parity)',
+      table: {
+        headers: ['Year', 'US Rate', 'JP Rate', 'Spread', 'USD/JPY'],
+        rows: [
+          ['2022', '1.5%', '0.0%', '1.5%', '130'],
+          ['2023', '5.0%', '0.0%', '5.0%', '145'],
+          ['2024', '5.25%', '0.1%', '5.15%', '155'],
+          ['2025', '4.0%', '0.5%', '3.5%', '140'],
+          ['2026', '3.5%', '1.0%', '2.5%', '135'],
+        ]
+      },
+      riskMap: false,
+      keyPoints: [
+        { color: 'yellow', text: 'SVB failed because rising rates destroyed the MTM value of its bond portfolio' },
+        { color: 'green', text: 'Inverted yield curve = short rates > long rates → historically precedes recession' },
+      ],
+      calc: null,
+      wikiSource: ['wiki/concepts/Financial Quant Risk Management.md'],
+    },
+  ],
+
+  questions: [
+    {cat:"Structure",
+     q:"Which office compares yesterday's VaR forecast against today's actual realised P&L to validate the risk model?",
+     opts:["Front Office — traders","Middle Office — quants","Back Office — settlement","Compliance"],ans:1,
+     exp:"<strong>Backtesting</strong> is a Middle Office quant function. Quants build the VaR model and are responsible for checking whether the forecast loss bounds held in reality."},
+    {cat:"Structure",
+     q:"A short seller holds a borrowed position and the stock pays a dividend. What happens?",
+     opts:["The short seller receives the dividend","The dividend is cancelled","The short seller must pay the dividend to the stock lender","No adjustment — dividends don't affect short positions"],ans:2,
+     exp:"Short selling means you borrowed someone else's shares. The original owner retains the right to dividends — so the short seller must <strong>compensate the lender</strong> out of pocket, adding to the cost of maintaining the position."},
+    {cat:"Risk Math",
+     q:"Implied Volatility (IV) vs Historical Volatility (HV) — which one is forward-looking?",
+     opts:["Historical Volatility","Implied Volatility","GARCH","EWMA"],ans:1,
+     exp:"<strong>Implied Volatility</strong> is back-calculated from current option market prices. Because options are priced by what investors expect to happen, IV reflects the market's consensus forecast of <em>future</em> uncertainty — not past data."},
+    {cat:"Risk Math",
+     q:"Which model captures volatility clustering — the empirical tendency for rough markets to stay rough?",
+     opts:["Black-Scholes","CAPM","GARCH","Duration"],ans:2,
+     exp:"<strong>GARCH</strong> (Generalised Autoregressive Conditional Heteroskedasticity) explicitly models the fact that large shocks tend to be followed by more large shocks. The variance equation includes both last period's shock and last period's variance."},
+    {cat:"Bond Math",
+     q:"What does Convexity correct for in bond pricing that Modified Duration cannot?",
+     opts:["Credit risk","The curvature of the price-yield relationship for large rate moves","Daily time decay","Dividend payments"],ans:1,
+     exp:"<strong>Duration</strong> is a linear (first-order) approximation. For large yield changes, the actual price-yield curve is curved (convex), not straight. <strong>Convexity</strong> is the second-order Taylor expansion term that corrects for this curvature."},
+    {cat:"Derivatives",
+     q:"Delta hedging a portfolio means keeping Delta near zero. What Greek measures how quickly Delta itself changes?",
+     opts:["Vega","Theta","Gamma","Rho"],ans:2,
+     exp:"<strong>Gamma (Γ)</strong> is the second derivative of option price with respect to the underlying — i.e. the rate of change of Delta. A high-Gamma position requires frequent rehedging because Delta shifts rapidly as the underlying moves."},
+    {cat:"XVA",
+     q:"In the CVA formula CVA = (1−R) × ∫EE(t)·dPD(t), what does EE stand for and where does PD come from?",
+     opts:["EE = Economic Exposure; PD from equity markets","EE = Expected Exposure (amount at risk if counterparty defaults); PD from CDS spreads","EE = Excess Equity; PD from credit ratings","EE = Earned Equity; PD from bond yields"],ans:1,
+     exp:"<strong>EE (Expected Exposure)</strong> is the expected positive value of the trade at a future date — how much you'd lose if the counterparty defaulted while you're in the money (calculated via Monte Carlo). <strong>PD</strong> is the default probability, derived from observed <strong>CDS spreads</strong> in the market."},
+    {cat:"Macro",
+     q:"Why did SVB (Silicon Valley Bank) collapse in March 2023?",
+     opts:["It had excessive exposure to crypto assets","The Fed's rate hikes caused the MTM value of its large treasury/bond holdings to collapse, creating a bank run","It was fined for money laundering violations","It lost on speculative FX positions"],ans:1,
+     exp:"SVB was long duration — it held a large portfolio of long-term treasuries and MBS. When the Fed hiked rates aggressively, <strong>bond prices fell sharply</strong>, creating massive unrealised (MTM) losses. When depositors learned of these losses, a bank run ensued."},
+    {cat:"Macro",
+     q:"What is an Inverted Yield Curve and why is it watched as a recession signal?",
+     opts:["Short-term rates fall below long-term rates — indicates economic expansion","Short-term rates exceed long-term rates — historically precedes recessions by 6–24 months","The yield curve flattens perfectly — neutral signal","Long-term rates spike above 10% — indicates hyperinflation"],ans:1,
+     exp:"An <strong>inverted yield curve</strong> (short > long rates) occurs when central banks hike short-term rates aggressively (e.g. to fight inflation). Markets interpret this as policy overtightening that will eventually cause a slowdown — making it a reliable leading recession indicator."},
+    {cat:"Macro",
+     q:"Japan's YCC (Yield Curve Control) pegged the 10-year JGB near 0% while US rates reached 5.25%. What exchange-rate consequence followed?",
+     opts:["The yen strengthened dramatically against the dollar","USD/JPY pushed toward 160 as carry traders borrowed yen to buy US assets","The Japanese yen was officially pegged to the dollar","Japan raised rates faster than the US, causing yen appreciation"],ans:1,
+     exp:"<strong>Interest rate parity</strong> (E[Δe] ≈ i_US − i_JP) predicts that a large rate differential drives the lower-rate currency weaker. With a ~525 bps spread, carry traders borrowed in cheap yen and invested in US assets, driving USD/JPY to historic highs near 160."},
+    {cat:"History",
+     q:"The world's first derivatives exchange (Dojima Rice Exchange, Osaka 1730) pioneered a settlement method still used in modern futures. What was it?",
+     opts:["Physical delivery only","Cash settlement (差金決済) — only the price difference changes hands","Government-guaranteed settlement","Bilateral OTC settlement"],ans:1,
+     exp:"<strong>Cash settlement</strong> (差金決済) means only the monetary difference between the agreed price and the market price is exchanged — no physical rice needed to move. This innovation eliminated costly logistics and is the foundation of modern derivatives settlement."},
+  ]
+},
+
+/* ══════════════════════════════════════════════════════════════
    TEMPLATES — Copy these to add new topics / questions
 ══════════════════════════════════════════════════════════════ */
 
