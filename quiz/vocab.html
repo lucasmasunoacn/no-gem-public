@@ -111,8 +111,10 @@ mark{background:rgba(245,158,11,.35);color:inherit;border-radius:3px;padding:0 1
   padding:11px 14px;color:var(--txt);cursor:pointer;font-size:.82rem;line-height:1.55;transition:all .15s}
 [data-theme="dark"] .vq-opt{background:var(--surf)}
 .vq-opt:hover:not(:disabled){border-color:var(--acc)}
-.vq-opt.correct{border-color:var(--grn);background:rgba(16,185,129,.09)}
-.vq-opt.wrong{border-color:var(--red);background:rgba(239,68,68,.09)}
+.vq-opt.correct{box-shadow:var(--sh-press);background:rgba(16,185,129,.12);color:#0f7a5a;border-color:transparent}
+.vq-opt.wrong{box-shadow:var(--sh-press);background:rgba(239,68,68,.12);color:#b3261e;border-color:transparent}
+[data-theme="dark"] .vq-opt.correct{color:#6ee7b7}
+[data-theme="dark"] .vq-opt.wrong{color:#fca5a5}
 .vq-foot{display:flex;justify-content:space-between;align-items:center;margin-top:16px;gap:10px}
 .vq-btn{padding:9px 18px;border-radius:9px;border:none;background:var(--acc);color:#fff;
   font-weight:600;cursor:pointer;font-size:.84rem}
@@ -136,6 +138,10 @@ footer{border-color:var(--div)}
 /* Click = a tiny concave press */
 .chip:active,.vq-go:active:not(:disabled),.vq-opt:active:not(:disabled),.vq-btn:active{box-shadow:var(--sh-press)}
 .vq-prog{background:var(--div);box-shadow:none}
+/* Clear object sizing — min ~44px tap target */
+.vq-opt{min-height:48px}
+.vq-go,.vq-btn{min-height:44px}
+.chip{min-height:34px;display:inline-flex;align-items:center}
 
 /* ── Liquid layer: glass header + controls + fluid flow ── */
 header{
@@ -166,6 +172,7 @@ header{
     <span>Vocabulary</span>
   </div>
   <a class="hbtn icon-only" href="index.html" title="Back to quiz" aria-label="Back to quiz">←</a>
+  <a class="hbtn icon-only" href="requests.html" title="Learning requests" aria-label="Learning requests">📥</a>
   <button class="hbtn icon-only" id="theme-btn" onclick="toggleTheme()" title="Toggle light/dark" aria-label="Toggle light/dark">🌙</button>
 </header>
 

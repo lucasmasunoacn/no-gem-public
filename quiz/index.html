@@ -236,33 +236,40 @@ main{max-width:1020px;margin:0 auto;padding:28px 18px}
 .qhnt{font-size:.76rem;color:var(--m);margin-bottom:18px}
 .opts{display:grid;gap:8px}
 .opt{
-  display:flex;align-items:center;gap:10px;background:var(--bg);
-  border:1px solid var(--brd);border-radius:8px;padding:11px 14px;
+  display:flex;align-items:center;gap:11px;background:var(--surf);
+  border:none;border-radius:12px;padding:13px 16px;min-height:48px;
   color:var(--txt);text-align:left;cursor:pointer;font-size:.84rem;
-  transition:all .15s
+  box-shadow:var(--sh-sm);transition:box-shadow .14s ease,transform .12s ease,color .15s
 }
-[data-theme="dark"] .opt{background:var(--surf)}
-.opt:hover:not(:disabled){border-color:var(--acc);background:rgba(88,101,242,.05)}
-.opt.correct{border-color:var(--grn);background:rgba(16,185,129,.08);color:#065f46}
+.opt:hover:not(:disabled){box-shadow:var(--sh)}
+.opt:active:not(:disabled){box-shadow:var(--sh-press)}
+/* Answered: the chosen option + the correct one press INTO the surface (concave) with color */
+.opt.correct{box-shadow:var(--sh-press);background:rgba(16,185,129,.12);color:#0f7a5a}
 [data-theme="dark"] .opt.correct{color:#6ee7b7}
-.opt.wrong{border-color:var(--red);background:rgba(239,68,68,.08);color:#7f1d1d}
+.opt.wrong{box-shadow:var(--sh-press);background:rgba(239,68,68,.12);color:#b3261e}
 [data-theme="dark"] .opt.wrong{color:#fca5a5}
+.opt:disabled:not(.correct):not(.wrong){opacity:.5;box-shadow:none}
+.opt:disabled{cursor:default}
 .olbl{
-  width:21px;height:21px;border-radius:50%;background:var(--brd);
+  width:24px;height:24px;border-radius:50%;background:var(--div);
   display:flex;align-items:center;justify-content:center;
-  font-size:.68rem;font-weight:700;flex-shrink:0
+  font-size:.68rem;font-weight:700;flex-shrink:0;color:var(--m)
 }
+.opt.correct .olbl{background:var(--grn);color:#fff}
+.opt.wrong .olbl{background:var(--red);color:#fff}
 .exp{
   margin-top:14px;padding:11px 14px;border-left:3px solid var(--acc);
   border-radius:0 7px 7px 0;font-size:.82rem;line-height:1.65;
   color:var(--m);background:rgba(88,101,242,.05)
 }
 .exp strong{color:var(--txt)}
-.exp-src{margin-top:10px;padding-top:9px;border-top:1px dashed var(--brd);
-  font-size:.72rem;color:var(--m2);line-height:1.7}
-.exp-src .esl{color:var(--m2);text-decoration:underline;text-underline-offset:2px;
-  font-family:monospace;word-break:break-word}
+.exp-src{margin-top:12px;padding-top:11px;border-top:1px solid var(--div);
+  display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:.72rem;color:var(--m);font-weight:700}
+.exp-src .esl{display:inline-block;padding:4px 11px;border-radius:99px;background:var(--surf);
+  box-shadow:var(--sh-sm);color:var(--m);text-decoration:none;font-weight:600;font-family:inherit;
+  transition:box-shadow .14s,color .15s}
 .exp-src .esl:hover{color:var(--acc)}
+.exp-src .esl:active{box-shadow:var(--sh-press)}
 .qnav{display:flex;justify-content:flex-end;margin-top:14px}
 .results{text-align:center;padding:24px 0}
 .sring{
@@ -295,11 +302,17 @@ footer,.wiki-src,.exp-src{border-color:var(--div)}
 .btn:active,.hbtn:active,.back-btn:active,.sdot:active,.tc-hide:active,.mbttn:active,
 .opt:active:not(:disabled),.topic-card:active{box-shadow:var(--sh-press)}
 .btn-sec{background:var(--surf)}
-.hbtn.icon-only{width:38px;height:38px;padding:0;border-radius:50%;display:inline-flex;
+.hbtn.icon-only{width:40px;height:40px;padding:0;border-radius:50%;display:inline-flex;
   align-items:center;justify-content:center;font-size:1.05rem}
-.back-btn{border-radius:50%;width:38px;height:38px;padding:0;display:inline-flex;
-  align-items:center;justify-content:center;font-size:1.1rem;font-weight:700}
-#pb{min-width:44px;font-size:1.1rem;font-weight:700}
+.back-btn{border-radius:50%;width:42px;height:42px;padding:0;display:inline-flex;
+  align-items:center;justify-content:center;font-size:1.15rem;font-weight:700}
+#pb{min-width:48px;font-size:1.15rem;font-weight:700}
+/* Clear object sizing — min ~44px tap target (Apple HIG / WCAG 2.5.5; Material 48dp) */
+.btn{min-height:44px}
+.hbtn{min-height:40px;display:inline-flex;align-items:center}
+.mbttn{min-height:40px;padding:8px 16px}
+.mbttn.active{box-shadow:var(--sh-sm)}
+.sdot{background:var(--surf)}
 /* Flat (no carved cavities) — outlined boxes + accent stripes, like the reference */
 .exp,.kp,.rbox{box-shadow:none}
 .fml,.rcat,.mode-tabs{box-shadow:none;border:1px solid var(--div)}
@@ -352,6 +365,7 @@ header{
     <span>Karpathy LLM Wiki</span>
   </div>
   <a class="hbtn icon-only" href="vocab.html" title="Vocabulary dictionary" aria-label="Vocabulary dictionary">📚</a>
+  <a class="hbtn icon-only" href="requests.html" title="Learning requests" aria-label="Learning requests">📥</a>
   <a class="hbtn icon-only" id="translate-btn" href="#" onclick="openTranslate(event)" title="Translate page" aria-label="Translate page">🌐</a>
   <button class="hbtn icon-only" id="theme-btn" onclick="toggleTheme()" title="Toggle light/dark" aria-label="Toggle light/dark">🌙</button>
 </header>
