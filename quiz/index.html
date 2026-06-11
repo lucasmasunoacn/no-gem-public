@@ -7,17 +7,20 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 /* ── THEME TOKENS ─────────────────────────────────────── */
+/* Soft neumorphism — matches the no-gem dashboard (lavender bg, white surfaces,
+   blurple accent, soft dual-tone shadows: dark bottom-right + light top-left). */
 :root{
-  --bg:#f6f8fa;--surf:#ffffff;--card:#ffffff;--brd:#d1d5db;
-  --acc:#3b82f6;--grn:#10b981;--red:#ef4444;--yel:#f59e0b;--pur:#7c3aed;
-  --txt:#111827;--m:#6b7280;--m2:#9ca3af;
-  --sh:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.06);
-  --sh-lg:0 4px 16px rgba(0,0,0,.1);
+  --bg:#eef0f6;--surf:#ffffff;--card:#ffffff;--brd:#e0e4ee;
+  --acc:#5865f2;--grn:#10b981;--red:#ef4444;--yel:#f59e0b;--pur:#7c3aed;
+  --txt:#1a1f2e;--m:#6b7280;--m2:#9ca3af;
+  --sh:4px 4px 12px rgba(40,50,90,.07),-4px -4px 12px rgba(255,255,255,.7);
+  --sh-lg:8px 8px 24px rgba(40,50,90,.12),-6px -6px 18px rgba(255,255,255,.85);
 }
 [data-theme="dark"]{
-  --bg:#08101f;--surf:#101827;--card:#18202e;--brd:#253040;
-  --txt:#f1f5f9;--m:#64748b;--m2:#94a3b8;
-  --sh:0 1px 3px rgba(0,0,0,.4);--sh-lg:0 4px 16px rgba(0,0,0,.5);
+  --bg:#1c2030;--surf:#222838;--card:#222838;--brd:#2c3346;
+  --txt:#e8ecf4;--m:#8b93a7;--m2:#9aa3b8;
+  --sh:4px 4px 12px rgba(0,0,0,.40),-4px -4px 12px rgba(255,255,255,.02);
+  --sh-lg:8px 8px 24px rgba(0,0,0,.50),-6px -6px 18px rgba(255,255,255,.03);
 }
 
 /* ── RESET & BASE ──────────────────────────────────────── */
@@ -144,7 +147,7 @@ main{max-width:1020px;margin:0 auto;padding:28px 18px}
   background:var(--bg);line-height:1.55
 }
 [data-theme="dark"] .kp{background:var(--surf)}
-.kp.blue{border-left-color:var(--acc);background:rgba(59,130,246,.06)}
+.kp.blue{border-left-color:var(--acc);background:rgba(88,101,242,.06)}
 .kp.green{border-left-color:var(--grn);background:rgba(16,185,129,.06)}
 .kp.yellow{border-left-color:var(--yel);background:rgba(245,158,11,.06)}
 .kp.red{border-left-color:var(--red);background:rgba(239,68,68,.06)}
@@ -184,7 +187,7 @@ main{max-width:1020px;margin:0 auto;padding:28px 18px}
 .ig select option{background:var(--surf)}
 .ig2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .rbox{
-  background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.18);
+  background:rgba(88,101,242,.07);border:1px solid rgba(88,101,242,.18);
   border-radius:8px;padding:10px;text-align:center;margin:10px 0
 }
 .rl{font-size:.65rem;color:var(--m);text-transform:uppercase;letter-spacing:.05em}
@@ -219,7 +222,7 @@ main{max-width:1020px;margin:0 auto;padding:28px 18px}
 .qcat{
   display:inline-block;padding:2px 8px;border-radius:20px;font-size:.68rem;
   font-weight:700;letter-spacing:.05em;text-transform:uppercase;
-  background:rgba(59,130,246,.1);color:var(--acc);margin-bottom:11px
+  background:rgba(88,101,242,.1);color:var(--acc);margin-bottom:11px
 }
 .qtxt{font-size:1rem;font-weight:600;line-height:1.6;margin-bottom:5px}
 .qhnt{font-size:.76rem;color:var(--m);margin-bottom:18px}
@@ -231,7 +234,7 @@ main{max-width:1020px;margin:0 auto;padding:28px 18px}
   transition:all .15s
 }
 [data-theme="dark"] .opt{background:var(--surf)}
-.opt:hover:not(:disabled){border-color:var(--acc);background:rgba(59,130,246,.05)}
+.opt:hover:not(:disabled){border-color:var(--acc);background:rgba(88,101,242,.05)}
 .opt.correct{border-color:var(--grn);background:rgba(16,185,129,.08);color:#065f46}
 [data-theme="dark"] .opt.correct{color:#6ee7b7}
 .opt.wrong{border-color:var(--red);background:rgba(239,68,68,.08);color:#7f1d1d}
@@ -244,9 +247,14 @@ main{max-width:1020px;margin:0 auto;padding:28px 18px}
 .exp{
   margin-top:14px;padding:11px 14px;border-left:3px solid var(--acc);
   border-radius:0 7px 7px 0;font-size:.82rem;line-height:1.65;
-  color:var(--m);background:rgba(59,130,246,.05)
+  color:var(--m);background:rgba(88,101,242,.05)
 }
 .exp strong{color:var(--txt)}
+.exp-src{margin-top:10px;padding-top:9px;border-top:1px dashed var(--brd);
+  font-size:.72rem;color:var(--m2);line-height:1.7}
+.exp-src .esl{color:var(--m2);text-decoration:underline;text-underline-offset:2px;
+  font-family:monospace;word-break:break-word}
+.exp-src .esl:hover{color:var(--acc)}
 .qnav{display:flex;justify-content:flex-end;margin-top:14px}
 .results{text-align:center;padding:24px 0}
 .sring{
@@ -713,7 +721,7 @@ function dVaR(){
     xs.push(x.toFixed(0));ty.push(x<=-var_?y:null);my.push(x>-var_?y:null);}
   CH_make('cv','line',{labels:xs,datasets:[
     {data:ty,borderColor:'rgba(239,68,68,.8)',backgroundColor:'rgba(239,68,68,.15)',fill:true,pointRadius:0,tension:.4},
-    {data:my,borderColor:'rgba(59,130,246,.7)',backgroundColor:'rgba(59,130,246,.08)',fill:true,pointRadius:0,tension:.4}
+    {data:my,borderColor:'rgba(88,101,242,.7)',backgroundColor:'rgba(88,101,242,.08)',fill:true,pointRadius:0,tension:.4}
   ]},{x:{ticks:{...TCK(),maxTicksLimit:7,callback(v){return parseFloat(this.getLabelForValue(v)).toFixed(0)+'億'}}},y:{display:false}});
 }
 
@@ -731,7 +739,7 @@ function dEL(){
     labels:['EAD Breakdown'],
     datasets:[
       {label:'EL',data:[el],backgroundColor:'rgba(239,68,68,.75)',borderRadius:4},
-      {label:'Recovery',data:[Math.max(ea-el,0)],backgroundColor:'rgba(59,130,246,.4)',borderRadius:4}
+      {label:'Recovery',data:[Math.max(ea-el,0)],backgroundColor:'rgba(88,101,242,.4)',borderRadius:4}
     ]
   },{plugins:{legend:{display:true,labels:{color:isDark()?'#94a3b8':'#6b7280',font:{size:9},boxWidth:9}}},
      x:{ticks:{display:false}},y:{ticks:{...TCK(),callback:v=>v+'億'},stacked:true},stacked:true});
@@ -750,7 +758,7 @@ function dLCR(){
   CH_make('cl','bar',{
     labels:['Lv1 Assets','Lv2A×85%','HQLA Total','Net Outflow'],
     datasets:[{data:[l1,l2*.85,hqla,net],
-      backgroundColor:['rgba(16,185,129,.75)','rgba(16,185,129,.4)','rgba(59,130,246,.75)','rgba(239,68,68,.65)'],
+      backgroundColor:['rgba(16,185,129,.75)','rgba(16,185,129,.4)','rgba(88,101,242,.75)','rgba(239,68,68,.65)'],
       borderRadius:4}]
   },{y:{ticks:{...TCK(),callback:v=>v+'億'}}});
 }
@@ -767,7 +775,7 @@ function dBasel(){
   CH_make('cb','bar',{
     labels:['CET1 Ratio','Tier1 Ratio','Total Capital'],
     datasets:[
-      {label:'Actual',data:[rc,rt,rT],backgroundColor:['rgba(59,130,246,.75)','rgba(167,139,250,.75)','rgba(16,185,129,.75)'],borderRadius:4},
+      {label:'Actual',data:[rc,rt,rT],backgroundColor:['rgba(88,101,242,.75)','rgba(167,139,250,.75)','rgba(16,185,129,.75)'],borderRadius:4},
       {label:'Minimum',data:[4.5,6.0,8.0],backgroundColor:['rgba(239,68,68,.4)','rgba(239,68,68,.4)','rgba(239,68,68,.4)'],borderRadius:4}
     ]
   },{plugins:{legend:{display:true,labels:{color:isDark()?'#94a3b8':'#6b7280',font:{size:9},boxWidth:9}}},
@@ -784,7 +792,7 @@ function dRAROC(){
   CH_make('cr','bar',{
     labels:['Revenue','Risk','Adj. Revenue','RAROC(%)'],
     datasets:[
-      {label:'Dept A',data:[ra,xa,ra-xa,rA],backgroundColor:'rgba(59,130,246,.72)',borderRadius:4},
+      {label:'Dept A',data:[ra,xa,ra-xa,rA],backgroundColor:'rgba(88,101,242,.72)',borderRadius:4},
       {label:'Dept B',data:[rb,xb,rb-xb,rB],backgroundColor:'rgba(245,158,11,.72)',borderRadius:4}
     ]
   },{plugins:{legend:{display:true,labels:{color:isDark()?'#94a3b8':'#6b7280',font:{size:9},boxWidth:9}}}});
@@ -805,7 +813,7 @@ function dKV(){
   CH_make('ck','bar',{
     labels:['KV Cache','A100 80GB','H100 80GB','RTX 4090 24GB'],
     datasets:[{data:[gb,80,80,24],
-      backgroundColor:['rgba(59,130,246,.75)','rgba(16,185,129,.5)','rgba(16,185,129,.5)','rgba(245,158,11,.5)'],
+      backgroundColor:['rgba(88,101,242,.75)','rgba(16,185,129,.5)','rgba(16,185,129,.5)','rgba(245,158,11,.5)'],
       borderRadius:4}]
   },{y:{ticks:{...TCK(),callback:v=>v+'GB'}}});
 }
@@ -815,7 +823,7 @@ function dSW30(){
   CH_make('csw','bar',{
     labels:['Software 1.0\n(Explicit Code)','Software 2.0\n(Neural Nets)','Software 3.0\n(LLMs/Prompts)'],
     datasets:[
-      {label:'Adaptability',data:[2,7,9.5],backgroundColor:'rgba(59,130,246,.72)',borderRadius:4},
+      {label:'Adaptability',data:[2,7,9.5],backgroundColor:'rgba(88,101,242,.72)',borderRadius:4},
       {label:'Interpretability',data:[9.5,5,3],backgroundColor:'rgba(239,68,68,.6)',borderRadius:4},
       {label:'Dev Speed',data:[3,6,9],backgroundColor:'rgba(16,185,129,.6)',borderRadius:4}
     ]
@@ -829,6 +837,19 @@ function dSW30(){
    QUIZ ENGINE
 ══════════════════════════════════════════════════════════ */
 let qIndex=0, qScore=0, qAnswered=false;
+
+// Linked wiki pages shown when a card flips to its answer. Prefers a per-question
+// `src` array (paths into the obsidian wiki); falls back to the topic's wikiPages.
+function qSrcLinks(q){
+  const pages = (q && Array.isArray(q.src) && q.src.length) ? q.src : (activeTopic?.wikiPages || []);
+  if(!pages.length) return '';
+  const links = pages.map(p=>{
+    const url = WIKI_BASE + p.replace(/ /g,'%20');
+    const name = p.split('/').pop().replace('.md','');
+    return `<a class="esl" href="${url}" target="_blank" rel="noopener" title="${p}">${name}</a>`;
+  }).join(' · ');
+  return `<div class="exp-src">📂 Linked pages: ${links}</div>`;
+}
 
 function renderQ(){
   const qs=activeTopic?.questions||[];
@@ -857,7 +878,7 @@ function pickQ(i){
   else{document.getElementById(`o${i}`).classList.add('wrong');document.querySelector(`#o${i} .olbl`).textContent='✗';
     document.getElementById(`o${q.ans}`).classList.add('correct');document.querySelector(`#o${q.ans} .olbl`).textContent='✓';}
   document.getElementById('qsc').textContent=`✓ ${qScore}`;
-  const e=document.createElement('div');e.className='exp';e.innerHTML=`📖 ${q.exp}`;
+  const e=document.createElement('div');e.className='exp';e.innerHTML=`📖 ${q.exp}${qSrcLinks(q)}`;
   document.getElementById('opts').after(e);
   document.getElementById('qnav').style.display='flex';
   document.getElementById('nxt').textContent=qIndex===(activeTopic?.questions||[]).length-1?'See Results 🏆':'Next →';

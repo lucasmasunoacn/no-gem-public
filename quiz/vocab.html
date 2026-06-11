@@ -7,16 +7,17 @@
 <style>
 /* ── THEME TOKENS (shared with index.html) ─────────────── */
 :root{
-  --bg:#f6f8fa;--surf:#ffffff;--card:#ffffff;--brd:#d1d5db;
-  --acc:#3b82f6;--grn:#10b981;--red:#ef4444;--yel:#f59e0b;--pur:#7c3aed;
-  --txt:#111827;--m:#6b7280;--m2:#9ca3af;
-  --sh:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.06);
-  --sh-lg:0 4px 16px rgba(0,0,0,.1);
+  --bg:#eef0f6;--surf:#ffffff;--card:#ffffff;--brd:#e0e4ee;
+  --acc:#5865f2;--grn:#10b981;--red:#ef4444;--yel:#f59e0b;--pur:#7c3aed;
+  --txt:#1a1f2e;--m:#6b7280;--m2:#9ca3af;
+  --sh:4px 4px 12px rgba(40,50,90,.07),-4px -4px 12px rgba(255,255,255,.7);
+  --sh-lg:8px 8px 24px rgba(40,50,90,.12),-6px -6px 18px rgba(255,255,255,.85);
 }
 [data-theme="dark"]{
-  --bg:#08101f;--surf:#101827;--card:#18202e;--brd:#253040;
-  --txt:#f1f5f9;--m:#64748b;--m2:#94a3b8;
-  --sh:0 1px 3px rgba(0,0,0,.4);--sh-lg:0 4px 16px rgba(0,0,0,.5);
+  --bg:#1c2030;--surf:#222838;--card:#222838;--brd:#2c3346;
+  --txt:#e8ecf4;--m:#8b93a7;--m2:#9aa3b8;
+  --sh:4px 4px 12px rgba(0,0,0,.40),-4px -4px 12px rgba(255,255,255,.02);
+  --sh-lg:8px 8px 24px rgba(0,0,0,.50),-6px -6px 18px rgba(255,255,255,.03);
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
@@ -84,6 +85,33 @@ main{max-width:1020px;margin:0 auto;padding:28px 18px}
 .empty{text-align:center;color:var(--m2);font-size:.9rem;padding:40px 0}
 mark{background:rgba(245,158,11,.35);color:inherit;border-radius:3px;padding:0 1px}
 
+/* ── VOCAB QUIZ MODE ──────────────────────────────────── */
+.quiz-launch{margin-top:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.vq-go{padding:8px 16px;border-radius:9px;border:none;background:var(--acc);color:#fff;
+  font-weight:700;cursor:pointer;font-size:.8rem;box-shadow:var(--sh);transition:filter .15s}
+.vq-go:hover:not(:disabled){filter:brightness(1.08)}
+.vq-go:disabled{opacity:.45;cursor:default}
+.vq-hint{font-size:.72rem;color:var(--m2)}
+.vq-card{background:var(--card);border:1px solid var(--brd);border-radius:14px;
+  padding:24px;box-shadow:var(--sh-lg);margin-top:8px}
+.vq-bar{display:flex;align-items:center;gap:10px;margin-bottom:16px;font-size:.78rem;color:var(--m)}
+.vq-prog{flex:1;height:4px;background:var(--brd);border-radius:2px;overflow:hidden}
+.vq-pf{height:100%;background:var(--acc);border-radius:2px;transition:width .4s}
+.vq-term{font-size:1.45rem;font-weight:800;margin-bottom:3px}
+.vq-full{font-size:.8rem;color:var(--m2);margin-bottom:16px;font-family:monospace}
+.vq-q{font-size:.8rem;color:var(--m);margin-bottom:14px}
+.vq-opts{display:grid;gap:8px}
+.vq-opt{text-align:left;background:var(--bg);border:1px solid var(--brd);border-radius:9px;
+  padding:11px 14px;color:var(--txt);cursor:pointer;font-size:.82rem;line-height:1.55;transition:all .15s}
+[data-theme="dark"] .vq-opt{background:var(--surf)}
+.vq-opt:hover:not(:disabled){border-color:var(--acc)}
+.vq-opt.correct{border-color:var(--grn);background:rgba(16,185,129,.09)}
+.vq-opt.wrong{border-color:var(--red);background:rgba(239,68,68,.09)}
+.vq-foot{display:flex;justify-content:space-between;align-items:center;margin-top:16px;gap:10px}
+.vq-btn{padding:9px 18px;border-radius:9px;border:none;background:var(--acc);color:#fff;
+  font-weight:600;cursor:pointer;font-size:.84rem}
+.vq-btn.sec{background:var(--brd);color:var(--txt)}
+
 footer{text-align:center;padding:24px;font-size:.72rem;color:var(--m2);
   border-top:1px solid var(--brd);margin-top:40px}
 </style>
@@ -108,8 +136,13 @@ footer{text-align:center;padding:24px;font-size:.72rem;color:var(--m2);
     <input class="searchbox" id="search" type="search" placeholder="🔍 Search terms and definitions…" oninput="render()" autocomplete="off">
     <div class="chips" id="chips"></div>
     <div class="count" id="count"></div>
+    <div class="quiz-launch">
+      <button class="vq-go" id="quizBtn" onclick="startQuiz()">🎯 Quiz me on these (<span id="quizN">0</span>)</button>
+      <span class="vq-hint">Multiple-choice recall on the terms in the current filter.</span>
+    </div>
   </div>
 
+  <div id="quiz" style="display:none"></div>
   <div id="results"></div>
 </main>
 
@@ -173,6 +206,7 @@ function render(){
   }
   document.getElementById('count').textContent =
     `${list.length} term${list.length===1?'':'s'}${q?` matching “${q}”`:''}${activeCat!=='all'?` in ${activeCat}`:''}`;
+  updateQuizBtn();
 
   if(!list.length){
     document.getElementById('results').innerHTML = `<div class="empty">No terms found. Try a different search or category.</div>`;
@@ -207,9 +241,104 @@ function render(){
     </div>`).join('');
 }
 
+/* ── VOCAB QUIZ MODE ──────────────────────────────────── */
+// Simpler than the topic quizzes: show a term, pick its definition. Operates on the
+// currently filtered set (category + search), so you can drill a single category.
+let vqList=[], vqi=0, vqScore=0, vqAnswered=false;
+
+function curFiltered(){
+  const ql = document.getElementById('search').value.trim().toLowerCase();
+  let list = VOCAB.filter(v => activeCat==='all' || v.cat===activeCat);
+  if(ql) list = list.filter(v =>
+    v.term.toLowerCase().includes(ql) || (v.full||'').toLowerCase().includes(ql) || v.def.toLowerCase().includes(ql));
+  return list;
+}
+function updateQuizBtn(){
+  const n = curFiltered().length;
+  const span = document.getElementById('quizN'); if(span) span.textContent = n;
+  const btn = document.getElementById('quizBtn');
+  if(btn){ btn.disabled = n < 4; btn.title = n < 4 ? 'Need at least 4 terms in this filter' : ''; }
+}
+function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+
+function startQuiz(){
+  const pool = curFiltered();
+  if(pool.length < 4){ return; }
+  vqList = shuffle(pool).slice(0, Math.min(12, pool.length));
+  vqi = 0; vqScore = 0;
+  document.querySelector('.hero').style.display='none';
+  document.querySelector('.controls').style.display='none';
+  document.getElementById('results').style.display='none';
+  document.getElementById('quiz').style.display='block';
+  renderVQ();
+}
+function exitQuiz(){
+  document.getElementById('quiz').style.display='none';
+  document.querySelector('.hero').style.display='';
+  document.querySelector('.controls').style.display='';
+  document.getElementById('results').style.display='';
+}
+function renderVQ(){
+  vqAnswered = false;
+  const v = vqList[vqi];
+  const sameCat = VOCAB.filter(x => x.cat===v.cat && x.term!==v.term);
+  const pool = sameCat.length >= 3 ? sameCat : VOCAB.filter(x => x.term!==v.term);
+  const opts = shuffle([v, ...shuffle(pool).slice(0,3)]);
+  const ans = opts.indexOf(v);
+  const wiki = v.wiki
+    ? `<a class="vwiki" href="${WIKI_BASE}${v.wiki.replace(/ /g,'%20')}" target="_blank">📂 ${v.wiki.split('/').pop().replace('.md','')}</a>` : '';
+  document.getElementById('quiz').innerHTML = `
+    <div class="vq-card">
+      <div class="vq-bar">
+        <span>Q ${vqi+1} / ${vqList.length}</span>
+        <div class="vq-prog"><div class="vq-pf" style="width:${vqi/vqList.length*100}%"></div></div>
+        <span style="color:var(--grn);font-weight:700">✓ ${vqScore}</span>
+      </div>
+      <div class="vq-term">${esc(v.term)}</div>
+      ${v.full?`<div class="vq-full">${esc(v.full)}</div>`:''}
+      <div class="vq-q">Which definition matches this term?</div>
+      <div class="vq-opts">
+        ${opts.map((o,i)=>`<button class="vq-opt" id="vo${i}" onclick="pickVQ(${i},${ans})">${o.def}</button>`).join('')}
+      </div>
+      <div id="vqSrc"></div>
+      <div class="vq-foot">
+        <button class="vq-btn sec" onclick="exitQuiz()">✕ Exit</button>
+        <div id="vqNext"></div>
+      </div>
+    </div>`;
+  document.getElementById('vqSrc').dataset.wiki = wiki;
+}
+function pickVQ(i, ans){
+  if(vqAnswered) return; vqAnswered = true;
+  document.querySelectorAll('.vq-opt').forEach(b => b.disabled = true);
+  if(i===ans){ vqScore++; document.getElementById('vo'+i).classList.add('correct'); }
+  else { document.getElementById('vo'+i).classList.add('wrong'); document.getElementById('vo'+ans).classList.add('correct'); }
+  const src = document.getElementById('vqSrc');
+  if(src.dataset.wiki) src.innerHTML = `<div style="margin-top:12px">${src.dataset.wiki}</div>`;
+  const last = vqi === vqList.length-1;
+  document.getElementById('vqNext').innerHTML = `<button class="vq-btn" onclick="nextVQ()">${last?'See score 🏆':'Next →'}</button>`;
+}
+function nextVQ(){ vqi++; if(vqi>=vqList.length) endQuiz(); else renderVQ(); }
+function endQuiz(){
+  const p = Math.round(vqScore/vqList.length*100);
+  const face = p>=80?'🏆':p>=50?'👍':'📚';
+  const msg  = p>=80?'Great recall!':p>=50?'Solid — review the misses.':'Keep studying these terms.';
+  document.getElementById('quiz').innerHTML = `
+    <div class="vq-card" style="text-align:center">
+      <div style="font-size:2.2rem;margin-bottom:6px">${face}</div>
+      <div style="font-size:1.35rem;font-weight:800;margin-bottom:4px">${vqScore} / ${vqList.length} — ${p}%</div>
+      <div style="color:var(--m);font-size:.85rem;margin-bottom:20px">${msg}</div>
+      <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+        <button class="vq-btn" onclick="startQuiz()">🔁 Retry</button>
+        <button class="vq-btn sec" onclick="exitQuiz()">📚 Back to dictionary</button>
+      </div>
+    </div>`;
+}
+
 /* ── INIT ─────────────────────────────────────────────── */
 buildChips();
 render();
+updateQuizBtn();
 </script>
 </body>
 </html>
