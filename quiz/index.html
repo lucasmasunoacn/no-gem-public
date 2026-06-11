@@ -292,6 +292,44 @@ footer,.wiki-src,.exp-src{border-color:var(--div)}
 .fml,.kp,.rbox,.rcat,.exp,.mode-tabs{box-shadow:var(--sh-in)}
 .prog{background:var(--surf);box-shadow:var(--sh-in)}
 .ig input,.ig select{box-shadow:var(--sh-in)}
+
+/* ── Liquid layer: glass header + fluid flow (neumorphic content stays opaque) ── */
+header{
+  background:color-mix(in srgb,var(--bg) 60%,transparent);
+  -webkit-backdrop-filter:blur(16px) saturate(170%);
+  backdrop-filter:blur(16px) saturate(170%);
+  box-shadow:0 6px 22px rgba(40,50,90,.10),inset 0 1px 0 rgba(255,255,255,.6);
+  border-bottom:1px solid var(--div)
+}
+[data-theme="dark"] header{box-shadow:0 6px 22px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.06)}
+
+/* Springy interactions */
+.topic-card,.opt,.btn,.hbtn,.sdot,.back-btn{
+  transition:box-shadow .18s cubic-bezier(.22,1,.36,1),transform .18s cubic-bezier(.22,1,.36,1),color .15s,border-color .15s}
+.opt:active:not(:disabled){transform:scale(.985)}
+.btn-acc:active,.btn-grn:active{transform:scale(.98)}
+
+/* Fluid entrances */
+@keyframes riseIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes popIn{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
+.screen.active .qcard{animation:popIn .42s cubic-bezier(.22,1,.36,1)}
+.topic-card{animation:riseIn .5s cubic-bezier(.22,1,.36,1) backwards}
+.topic-card:nth-child(2){animation-delay:.05s}.topic-card:nth-child(3){animation-delay:.1s}
+.topic-card:nth-child(4){animation-delay:.15s}.topic-card:nth-child(5){animation-delay:.2s}
+.topic-card:nth-child(6){animation-delay:.25s}.topic-card:nth-child(n+7){animation-delay:.3s}
+.slide.active{animation:riseIn .4s cubic-bezier(.22,1,.36,1)}
+.exp{animation:riseIn .3s ease}
+
+/* Seamless screen transitions (View Transitions API) */
+@media (prefers-reduced-motion:no-preference){
+  ::view-transition-old(root){animation:vtfade .26s ease both}
+  ::view-transition-new(root){animation:vtfade .34s cubic-bezier(.22,1,.36,1) reverse both}
+}
+@keyframes vtfade{to{opacity:0}}
+
+@media (prefers-reduced-motion:reduce){
+  *,::before,::after{animation-duration:.001ms!important;transition-duration:.001ms!important}
+}
 </style>
 </head>
 <body>
@@ -480,8 +518,15 @@ function buildHome() {
 let activeTopic = null, activeSlide = 0, activeMode = 'slides';
 
 function show(id) {
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.getElementById('screen-'+id).classList.add('active');
+  const swap = () => {
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    document.getElementById('screen-'+id).classList.add('active');
+    window.scrollTo({ top: 0 });
+  };
+  // View Transitions API → seamless cross-fade between screens (graceful fallback).
+  if (document.startViewTransition && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    document.startViewTransition(swap);
+  } else { swap(); }
 }
 
 function goHome() {

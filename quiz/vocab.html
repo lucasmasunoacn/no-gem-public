@@ -131,6 +131,27 @@ footer{border-color:var(--div)}
 .vq-btn{box-shadow:var(--sh-sm)}
 .vq-btn:active{box-shadow:var(--sh-in)}
 .vq-prog{background:var(--surf);box-shadow:var(--sh-in)}
+
+/* ── Liquid layer: glass header + controls + fluid flow ── */
+header{
+  background:color-mix(in srgb,var(--bg) 60%,transparent);
+  -webkit-backdrop-filter:blur(16px) saturate(170%);
+  backdrop-filter:blur(16px) saturate(170%);
+  box-shadow:0 6px 22px rgba(40,50,90,.10),inset 0 1px 0 rgba(255,255,255,.6);
+  border-bottom:1px solid var(--div)
+}
+[data-theme="dark"] header{box-shadow:0 6px 22px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.06)}
+.controls{background:color-mix(in srgb,var(--bg) 80%,transparent);
+  -webkit-backdrop-filter:blur(10px) saturate(150%);backdrop-filter:blur(10px) saturate(150%)}
+.chip,.vq-opt,.vq-go,.vq-btn{
+  transition:box-shadow .18s cubic-bezier(.22,1,.36,1),transform .18s cubic-bezier(.22,1,.36,1),color .15s}
+.vq-opt:active:not(:disabled){transform:scale(.985)}
+.vq-go:active:not(:disabled),.vq-btn:active{transform:scale(.98)}
+@keyframes popIn{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
+.vq-card{animation:popIn .4s cubic-bezier(.22,1,.36,1)}
+@media (prefers-reduced-motion:reduce){
+  *,::before,::after{animation-duration:.001ms!important;transition-duration:.001ms!important}
+}
 </style>
 </head>
 <body>
