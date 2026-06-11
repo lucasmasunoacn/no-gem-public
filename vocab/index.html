@@ -7,99 +7,38 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+JP:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link href="../shared/neu.css" rel="stylesheet">
 <style>
-/* ── THEME TOKENS (shared with index.html) ─────────────── */
-:root{
-  --bg:#e7eaf1;--surf:#e7eaf1;--card:#e7eaf1;--brd:transparent;--div:#ccd3e0;
-  --acc:#5865f2;--grn:#10b981;--red:#ef4444;--yel:#f59e0b;--pur:#7c3aed;
-  --txt:#2b3350;--m:#697089;--m2:#8a92a6;
-  --d-sh:#b6bfd0;--l-sh:#ffffff;
-  --sh:6px 6px 14px var(--d-sh),-6px -6px 14px var(--l-sh);
-  --sh-lg:10px 10px 22px var(--d-sh),-8px -8px 20px var(--l-sh);
-  --sh-sm:4px 4px 9px var(--d-sh),-4px -4px 9px var(--l-sh);
-  --sh-in:inset 3px 3px 6px var(--d-sh),inset -3px -3px 6px var(--l-sh);
-  --sh-press:inset 2px 2px 4px var(--d-sh),inset -2px -2px 4px var(--l-sh);
-}
-[data-theme="dark"]{
-  --bg:#2a2e37;--surf:#2a2e37;--card:#2a2e37;--brd:transparent;--div:#3a3f4b;
-  --txt:#e6e9f0;--m:#9aa3b5;--m2:#7f8799;
-  --d-sh:#1f2228;--l-sh:#353a45;
-}
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Inter','Noto Sans JP',-apple-system,BlinkMacSystemFont,'Segoe UI','Hiragino Kaku Gothic ProN','Yu Gothic',Meiryo,system-ui,sans-serif;
-  background:var(--bg);color:var(--txt);min-height:100vh;
-  transition:background .25s,color .25s}
-a{color:var(--acc);text-decoration:none}
-strong{font-weight:700}em{color:var(--pur);font-style:normal;font-family:monospace;font-size:.95em}
+em{color:var(--pur);font-style:normal;font-family:monospace;font-size:.95em}
 
-/* ── HEADER ───────────────────────────────────────────── */
-header{
-  background:var(--surf);border-bottom:1px solid var(--brd);
-  padding:14px 24px;display:flex;align-items:center;gap:12px;
-  position:sticky;top:0;z-index:100;box-shadow:var(--sh)
-}
-.logo{font-size:1.1rem;font-weight:800;color:var(--acc);flex:1}
-.logo span{color:var(--txt);font-weight:400;font-size:.85rem;margin-left:8px}
-.hbtn{
-  padding:6px 12px;border-radius:7px;border:1px solid var(--brd);
-  background:none;color:var(--m);cursor:pointer;font-size:.8rem;
-  transition:all .15s;white-space:nowrap;text-decoration:none
-}
-.hbtn:hover{background:var(--brd);color:var(--txt)}
-
+/* ── LAYOUT ───────────────────────────────────────────── */
 main{max-width:1020px;margin:0 auto;padding:28px 18px}
-
-/* ── HERO + CONTROLS ──────────────────────────────────── */
 .hero{text-align:center;padding:24px 0 16px}
 .hero h2{font-size:1.6rem;font-weight:800;margin-bottom:8px}
 .hero p{color:var(--m);font-size:.9rem;max-width:560px;margin:0 auto}
 
-.controls{position:sticky;top:57px;background:var(--bg);padding:14px 0 10px;z-index:50}
+/* ── CONTROLS ─────────────────────────────────────────── */
+.controls{position:sticky;top:70px;background:var(--bg);padding:14px 0 10px;z-index:50}
 .searchbox{
-  width:100%;background:var(--card);border:1px solid var(--brd);border-radius:10px;
-  padding:11px 14px;color:var(--txt);font-size:.92rem;box-shadow:var(--sh)
+  width:100%;background:var(--card);border:1px solid var(--div);border-radius:10px;
+  padding:11px 14px;color:var(--txt);font-size:.92rem
 }
 .searchbox:focus{outline:none;border-color:var(--acc)}
-/* Custom neumorphic dropdown */
-.ndrop{position:relative;margin-top:11px}
-.ndrop-btn{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;font-family:inherit;
-  font-size:.84rem;font-weight:700;color:var(--txt);background:var(--surf);border:none;border-radius:12px;
-  padding:12px 16px;min-height:46px;cursor:pointer;box-shadow:var(--sh-sm)}
-.ndrop-btn:active,.ndrop.open .ndrop-btn{box-shadow:var(--sh-press)}
-.ndrop-chev{color:var(--m2);font-size:.62rem;transition:transform .2s}
-.ndrop.open .ndrop-chev{transform:rotate(180deg)}
-.ndrop-panel{position:absolute;top:calc(100% + 8px);left:0;right:0;z-index:200;background:var(--bg);border-radius:14px;
-  box-shadow:var(--sh-lg);padding:6px;display:none;max-height:300px;overflow-y:auto}
-.ndrop.open .ndrop-panel{display:block;animation:ndropIn .15s ease}
-@keyframes ndropIn{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:none}}
-.ndrop-opt{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;background:none;border:none;
-  text-align:left;font-family:inherit;font-size:.82rem;font-weight:600;color:var(--m);padding:11px 12px;border-radius:10px;cursor:pointer}
-.ndrop-opt:hover{color:var(--txt)}
-.ndrop-opt.sel{color:var(--acc);background:var(--surf);box-shadow:var(--sh-press)}
-.ndrop-opt .c{font-size:.72rem;color:var(--m2);font-weight:600}
-.chip{
-  padding:5px 12px;border-radius:18px;border:1px solid var(--brd);background:var(--card);
-  color:var(--m);cursor:pointer;font-size:.76rem;font-weight:600;transition:all .15s;white-space:nowrap
-}
-.chip:hover{border-color:var(--acc)}
-.chip.active{background:var(--acc);color:#fff;border-color:var(--acc)}
+.ndrop{margin-top:11px}
 .count{font-size:.74rem;color:var(--m2);margin-top:9px}
 
-/* ── GROUPS + ENTRIES ─────────────────────────────────── */
-.group{margin-top:22px}
-.group-h{font-size:.82rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;
-  color:var(--acc);margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid var(--brd)}
-.vlist{display:grid;gap:18px}
-.vcard{
-  background:var(--card);border:none;border-radius:16px;
-  padding:16px 18px;box-shadow:var(--sh)
-}
+/* ── VOCAB ENTRIES ────────────────────────────────────── */
 .group{margin-top:26px}
+.group-h{font-size:.82rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--acc);margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid var(--div)}
+.vlist{display:grid;gap:18px}
+.vcard{background:var(--card);border:none;border-radius:16px;padding:16px 18px;box-shadow:var(--sh)}
 .vtop{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:5px}
 .vterm{font-size:1rem;font-weight:700}
 .vfull{font-size:.78rem;color:var(--m2)}
 .vbadge{margin-left:auto;font-size:.64rem;padding:2px 8px;border-radius:10px;
-  background:var(--bg);border:1px solid var(--brd);color:var(--m);font-weight:600;white-space:nowrap}
+  background:var(--bg);border:1px solid var(--brd);color:var(--m);font-weight:600;
+  white-space:nowrap;box-shadow:var(--sh-sm)}
 [data-theme="dark"] .vbadge{background:var(--surf)}
 .vdef{font-size:.84rem;color:var(--m);line-height:1.6}
 .vwiki{display:inline-block;margin-top:8px;font-size:.7rem;color:var(--m2);
@@ -110,84 +49,51 @@ mark{background:rgba(245,158,11,.35);color:inherit;border-radius:3px;padding:0 1
 
 /* ── VOCAB QUIZ MODE ──────────────────────────────────── */
 .quiz-launch{margin-top:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.vq-go{padding:8px 16px;border-radius:9px;border:none;background:var(--acc);color:#fff;
-  font-weight:700;cursor:pointer;font-size:.8rem;box-shadow:var(--sh);transition:filter .15s}
-.vq-go:hover:not(:disabled){filter:brightness(1.08)}
+/* neu-btn (shared) handles pattern; these set sizing + color token */
+.vq-go{
+  --tc:var(--acc);padding:8px 16px;border-radius:12px;
+  font-size:.8rem;min-height:44px;font-family:inherit
+}
 .vq-go:disabled{opacity:.45;cursor:default}
 .vq-hint{font-size:.72rem;color:var(--m2)}
 .vq-card{background:var(--card);border:1px solid var(--brd);border-radius:14px;
-  padding:24px;box-shadow:var(--sh-lg);margin-top:8px}
+  padding:24px;box-shadow:var(--sh-lg);margin-top:8px;animation:popIn .4s cubic-bezier(.22,1,.36,1)}
 .vq-bar{display:flex;align-items:center;gap:10px;margin-bottom:16px;font-size:.78rem;color:var(--m)}
-.vq-prog{flex:1;height:4px;background:var(--brd);border-radius:2px;overflow:hidden}
+.vq-prog{flex:1;height:4px;background:var(--div);border-radius:2px;overflow:hidden}
 .vq-pf{height:100%;background:var(--acc);border-radius:2px;transition:width .4s}
 .vq-term{font-size:1.45rem;font-weight:800;margin-bottom:3px}
 .vq-full{font-size:.8rem;color:var(--m2);margin-bottom:16px;font-family:monospace}
 .vq-q{font-size:.8rem;color:var(--m);margin-bottom:14px}
 .vq-opts{display:grid;gap:8px}
-.vq-opt{text-align:left;background:var(--bg);border:1px solid var(--brd);border-radius:9px;
-  padding:11px 14px;color:var(--txt);cursor:pointer;font-size:.82rem;line-height:1.55;transition:all .15s}
+.vq-opt{
+  text-align:left;background:var(--bg);border:1px solid var(--div);border-radius:9px;
+  padding:11px 14px;color:var(--txt);cursor:pointer;font-size:.82rem;line-height:1.55;
+  min-height:48px;box-shadow:var(--sh-sm);
+  transition:box-shadow .18s cubic-bezier(.22,1,.36,1),transform .12s,color .15s
+}
 [data-theme="dark"] .vq-opt{background:var(--surf)}
-.vq-opt:hover:not(:disabled){border-color:var(--acc)}
+.vq-opt:hover:not(:disabled){box-shadow:var(--sh);border-color:var(--acc)}
+.vq-opt:active:not(:disabled){box-shadow:var(--sh-press);transform:scale(.985)}
 .vq-opt.correct{box-shadow:var(--sh-press);background:rgba(16,185,129,.12);color:#0f7a5a;border-color:transparent}
 .vq-opt.wrong{box-shadow:var(--sh-press);background:rgba(239,68,68,.12);color:#b3261e;border-color:transparent}
 [data-theme="dark"] .vq-opt.correct{color:#6ee7b7}
 [data-theme="dark"] .vq-opt.wrong{color:#fca5a5}
 .vq-foot{display:flex;justify-content:space-between;align-items:center;margin-top:16px;gap:10px}
-.vq-btn{padding:9px 18px;border-radius:9px;border:none;background:var(--acc);color:#fff;
-  font-weight:600;cursor:pointer;font-size:.84rem}
-.vq-btn.sec{background:var(--surf);color:var(--txt)}
-/* Colored buttons as convex domes */
-.vq-go,.vq-btn:not(.sec){box-shadow:var(--sh-sm),inset 2px 2px 5px rgba(255,255,255,.30),inset -3px -3px 7px rgba(0,0,0,.16)}
-.vq-go:active:not(:disabled),.vq-btn:not(.sec):active{box-shadow:var(--sh-press)}
-
-footer{text-align:center;padding:24px;font-size:.72rem;color:var(--m2);
-  border-top:1px solid var(--brd);margin-top:40px}
-
-/* ── Neumorphism component layer (raised controls, recessed inputs) ── */
-footer{border-color:var(--div)}
-.group-h{border-bottom-color:var(--div)}
-.searchbox,.searchbox:focus{box-shadow:none;border:1px solid var(--div)}
-.hbtn.icon-only{width:38px;height:38px;padding:0;border-radius:50%;display:inline-flex;
-  align-items:center;justify-content:center;font-size:1.05rem}
-.chip{box-shadow:var(--sh-sm)}
-.vbadge{box-shadow:var(--sh-sm)}
-.vq-go{box-shadow:var(--sh-sm)}
-.vq-opt{box-shadow:var(--sh-sm)}
-.vq-btn{box-shadow:var(--sh-sm)}
-.vq-opt:hover:not(:disabled){box-shadow:var(--sh)}
-/* Click = a tiny concave press */
-.chip:active,.vq-go:active:not(:disabled),.vq-opt:active:not(:disabled),.vq-btn:active{box-shadow:var(--sh-press)}
-.vq-prog{background:var(--div);box-shadow:none}
-/* Clear object sizing — min ~44px tap target */
-.vq-opt{min-height:48px}
-.vq-go,.vq-btn{min-height:44px}
-.chip{min-height:34px;display:inline-flex;align-items:center}
-
-/* ── Header: floating neumorphic bar — all four corners + dual shadow visible ── */
-header{background:var(--surf);box-shadow:var(--sh);border:none;border-radius:18px;
-  margin:12px;padding:12px 18px;display:flex;align-items:center;gap:12px;position:sticky;top:12px;z-index:100}
-.controls{background:var(--bg);top:70px}
-.chip,.vq-opt,.vq-go,.vq-btn{
-  transition:box-shadow .18s cubic-bezier(.22,1,.36,1),transform .18s cubic-bezier(.22,1,.36,1),color .15s}
-.vq-opt:active:not(:disabled){transform:scale(.985)}
-.vq-go:active:not(:disabled),.vq-btn:active{transform:scale(.98)}
-@keyframes popIn{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
-.vq-card{animation:popIn .4s cubic-bezier(.22,1,.36,1)}
-@media (prefers-reduced-motion:reduce){
-  *,::before,::after{animation-duration:.001ms!important;transition-duration:.001ms!important}
-}
+/* neu-btn handles pattern; these set sizing */
+.vq-btn{--tc:var(--acc);padding:9px 18px;border-radius:12px;font-size:.84rem;
+  min-height:44px;font-family:inherit}
+.vq-btn.sec{--tc:transparent;border-color:var(--div) !important;color:var(--m)}
+.vq-btn.sec::after{display:none}
 </style>
 </head>
 <body>
 
 <header>
-  <div class="logo">🧠 Second Brain
-    <span>Vocabulary</span>
-  </div>
-  <a class="hbtn icon-only" href="../quiz/" title="Back to quiz" aria-label="Back to quiz">←</a>
-  <a class="hbtn icon-only" href="flashcards.html" title="Flashcards (spaced repetition)" aria-label="Flashcards">🃏</a>
-  <a class="hbtn icon-only" href="../quiz/requests.html" title="Learning requests" aria-label="Learning requests">📥</a>
-  <button class="hbtn icon-only" id="theme-btn" onclick="toggleTheme()" title="Toggle light/dark" aria-label="Toggle light/dark">🌙</button>
+  <div class="logo">🧠 Second Brain <span>Vocabulary</span></div>
+  <a class="hbtn" href="../quiz/" title="Back to quiz" aria-label="Back to quiz">←</a>
+  <a class="hbtn" href="flashcards.html" title="Flashcards (spaced repetition)" aria-label="Flashcards">🃏</a>
+  <a class="hbtn" href="../quiz/requests.html" title="Learning requests" aria-label="Learning requests">📥</a>
+  <button class="hbtn" id="theme-btn" onclick="toggleTheme()" title="Toggle light/dark" aria-label="Toggle light/dark">🌙</button>
 </header>
 
 <main>
@@ -199,12 +105,14 @@ header{background:var(--surf);box-shadow:var(--sh);border:none;border-radius:18p
   <div class="controls">
     <input class="searchbox" id="search" type="search" placeholder="🔍 Search terms and definitions…" oninput="render()" autocomplete="off">
     <div class="ndrop" id="catDrop">
-      <button class="ndrop-btn" type="button" onclick="toggleDrop(event)" aria-haspopup="listbox"><span class="ndrop-label" id="catLabel">All</span><span class="ndrop-chev">▼</span></button>
+      <button class="ndrop-btn" type="button" onclick="toggleDrop(event)" aria-haspopup="listbox">
+        <span class="ndrop-label" id="catLabel">All</span><span class="ndrop-chev">▼</span>
+      </button>
       <div class="ndrop-panel" id="catPanel" role="listbox"></div>
     </div>
     <div class="count" id="count"></div>
     <div class="quiz-launch">
-      <button class="vq-go" id="quizBtn" onclick="startQuiz()">🎯 Quiz me on these (<span id="quizN">0</span>)</button>
+      <button class="vq-go neu-btn" id="quizBtn" onclick="startQuiz()">🎯 Quiz me on these (<span id="quizN">0</span>)</button>
       <span class="vq-hint">Multiple-choice recall on the terms in the current filter.</span>
     </div>
   </div>
@@ -220,194 +128,7 @@ header{background:var(--surf);box-shadow:var(--sh);border:none;border-radius:18p
 </footer>
 
 <script src="vocab.js"></script>
-<script>
-/* ── THEME (shared key with the quiz) ─────────────────── */
-const root = document.documentElement;
-const themeBtn = document.getElementById('theme-btn');
-const stored = localStorage.getItem('quiz-theme');
-const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-const initTheme = stored || (systemDark ? 'dark' : 'light');
-root.setAttribute('data-theme', initTheme);
-themeBtn.textContent = initTheme === 'dark' ? '☀️' : '🌙';
-function toggleTheme(){
-  const t = root.getAttribute('data-theme')==='dark' ? 'light' : 'dark';
-  root.setAttribute('data-theme', t);
-  themeBtn.textContent = t==='dark' ? '☀️' : '🌙';
-  localStorage.setItem('quiz-theme', t);
-}
-
-/* ── STATE ────────────────────────────────────────────── */
-const VOCAB = (window.VOCAB || []).slice().sort((a,b)=>a.term.localeCompare(b.term,'en'));
-const WIKI_BASE = window.VOCAB_WIKI_BASE || '';
-const CATS = [...new Set(VOCAB.map(v=>v.cat))];
-let activeCat = 'all';
-
-/* ── FILTER CHIPS ─────────────────────────────────────── */
-function buildChips(){
-  const opts = [['all','All',VOCAB.length]].concat(CATS.map(c=>[c,c,VOCAB.filter(v=>v.cat===c).length]));
-  document.getElementById('catPanel').innerHTML = opts.map(([id,label,n])=>
-    `<button type="button" class="ndrop-opt${id===activeCat?' sel':''}" data-val="${esc(id)}"><span>${esc(label)}</span><span class="c">${n}</span></button>`).join('');
-  document.getElementById('catLabel').textContent = activeCat==='all'?'All':activeCat;
-}
-function setCat(c){ activeCat = c; buildChips(); render(); }
-function toggleDrop(e){e.stopPropagation();document.getElementById('catDrop').classList.toggle('open');}
-document.getElementById('catPanel').addEventListener('click',e=>{const b=e.target.closest('.ndrop-opt');if(!b)return;document.getElementById('catDrop').classList.remove('open');setCat(b.dataset.val);});
-document.addEventListener('click',()=>document.getElementById('catDrop').classList.remove('open'));
-
-/* ── HIGHLIGHT MATCHES ────────────────────────────────── */
-function esc(s){ return s.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }
-function hl(text, q){
-  if(!q) return text;
-  // highlight only outside existing HTML tags
-  return text.replace(new RegExp('(?![^<]*>)(' + q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + ')','gi'), '<mark>$1</mark>');
-}
-
-/* ── RENDER ───────────────────────────────────────────── */
-function render(){
-  const q = document.getElementById('search').value.trim();
-  const ql = q.toLowerCase();
-  let list = VOCAB.filter(v => activeCat==='all' || v.cat===activeCat);
-  if(ql){
-    list = list.filter(v =>
-      v.term.toLowerCase().includes(ql) ||
-      (v.full||'').toLowerCase().includes(ql) ||
-      v.def.toLowerCase().includes(ql));
-  }
-  document.getElementById('count').textContent =
-    `${list.length} term${list.length===1?'':'s'}${q?` matching “${q}”`:''}${activeCat!=='all'?` in ${activeCat}`:''}`;
-  updateQuizBtn();
-
-  if(!list.length){
-    document.getElementById('results').innerHTML = `<div class="empty">No terms found. Try a different search or category.</div>`;
-    return;
-  }
-
-  // group by category (preserve category order), each sorted alphabetically
-  const groups = (activeCat==='all' ? CATS : [activeCat])
-    .map(cat => [cat, list.filter(v=>v.cat===cat)])
-    .filter(([,items]) => items.length);
-
-  document.getElementById('results').innerHTML = groups.map(([cat, items]) => `
-    <div class="group">
-      <div class="group-h">${cat}</div>
-      <div class="vlist">
-        ${items.map(v => {
-          const wikiLink = v.wiki
-            ? `<a class="vwiki" href="${WIKI_BASE}${v.wiki.replace(/ /g,'%20')}" target="_blank">📂 ${v.wiki.split('/').pop().replace('.md','')}</a>`
-            : '';
-          return `
-          <div class="vcard">
-            <div class="vtop">
-              <span class="vterm">${hl(esc(v.term), q)}</span>
-              ${v.full?`<span class="vfull">${hl(esc(v.full), q)}</span>`:''}
-              <span class="vbadge">${v.cat}</span>
-            </div>
-            <div class="vdef">${hl(v.def, q)}</div>
-            ${wikiLink}
-          </div>`;
-        }).join('')}
-      </div>
-    </div>`).join('');
-}
-
-/* ── VOCAB QUIZ MODE ──────────────────────────────────── */
-// Simpler than the topic quizzes: show a term, pick its definition. Operates on the
-// currently filtered set (category + search), so you can drill a single category.
-let vqList=[], vqi=0, vqScore=0, vqAnswered=false;
-
-function curFiltered(){
-  const ql = document.getElementById('search').value.trim().toLowerCase();
-  let list = VOCAB.filter(v => activeCat==='all' || v.cat===activeCat);
-  if(ql) list = list.filter(v =>
-    v.term.toLowerCase().includes(ql) || (v.full||'').toLowerCase().includes(ql) || v.def.toLowerCase().includes(ql));
-  return list;
-}
-function updateQuizBtn(){
-  const n = curFiltered().length;
-  const span = document.getElementById('quizN'); if(span) span.textContent = n;
-  const btn = document.getElementById('quizBtn');
-  if(btn){ btn.disabled = n < 4; btn.title = n < 4 ? 'Need at least 4 terms in this filter' : ''; }
-}
-function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
-
-function startQuiz(){
-  const pool = curFiltered();
-  if(pool.length < 4){ return; }
-  vqList = shuffle(pool).slice(0, Math.min(12, pool.length));
-  vqi = 0; vqScore = 0;
-  document.querySelector('.hero').style.display='none';
-  document.querySelector('.controls').style.display='none';
-  document.getElementById('results').style.display='none';
-  document.getElementById('quiz').style.display='block';
-  renderVQ();
-}
-function exitQuiz(){
-  document.getElementById('quiz').style.display='none';
-  document.querySelector('.hero').style.display='';
-  document.querySelector('.controls').style.display='';
-  document.getElementById('results').style.display='';
-}
-function renderVQ(){
-  vqAnswered = false;
-  const v = vqList[vqi];
-  const sameCat = VOCAB.filter(x => x.cat===v.cat && x.term!==v.term);
-  const pool = sameCat.length >= 3 ? sameCat : VOCAB.filter(x => x.term!==v.term);
-  const opts = shuffle([v, ...shuffle(pool).slice(0,3)]);
-  const ans = opts.indexOf(v);
-  const wiki = v.wiki
-    ? `<a class="vwiki" href="${WIKI_BASE}${v.wiki.replace(/ /g,'%20')}" target="_blank">📂 ${v.wiki.split('/').pop().replace('.md','')}</a>` : '';
-  document.getElementById('quiz').innerHTML = `
-    <div class="vq-card">
-      <div class="vq-bar">
-        <span>Q ${vqi+1} / ${vqList.length}</span>
-        <div class="vq-prog"><div class="vq-pf" style="width:${vqi/vqList.length*100}%"></div></div>
-        <span style="color:var(--grn);font-weight:700">✓ ${vqScore}</span>
-      </div>
-      <div class="vq-term">${esc(v.term)}</div>
-      ${v.full?`<div class="vq-full">${esc(v.full)}</div>`:''}
-      <div class="vq-q">Which definition matches this term?</div>
-      <div class="vq-opts">
-        ${opts.map((o,i)=>`<button class="vq-opt" id="vo${i}" onclick="pickVQ(${i},${ans})">${o.def}</button>`).join('')}
-      </div>
-      <div id="vqSrc"></div>
-      <div class="vq-foot">
-        <button class="vq-btn sec" onclick="exitQuiz()">✕ Exit</button>
-        <div id="vqNext"></div>
-      </div>
-    </div>`;
-  document.getElementById('vqSrc').dataset.wiki = wiki;
-}
-function pickVQ(i, ans){
-  if(vqAnswered) return; vqAnswered = true;
-  document.querySelectorAll('.vq-opt').forEach(b => b.disabled = true);
-  if(i===ans){ vqScore++; document.getElementById('vo'+i).classList.add('correct'); }
-  else { document.getElementById('vo'+i).classList.add('wrong'); document.getElementById('vo'+ans).classList.add('correct'); }
-  const src = document.getElementById('vqSrc');
-  if(src.dataset.wiki) src.innerHTML = `<div style="margin-top:12px">${src.dataset.wiki}</div>`;
-  const last = vqi === vqList.length-1;
-  document.getElementById('vqNext').innerHTML = `<button class="vq-btn" onclick="nextVQ()">${last?'See score 🏆':'Next →'}</button>`;
-}
-function nextVQ(){ vqi++; if(vqi>=vqList.length) endQuiz(); else renderVQ(); }
-function endQuiz(){
-  const p = Math.round(vqScore/vqList.length*100);
-  const face = p>=80?'🏆':p>=50?'👍':'📚';
-  const msg  = p>=80?'Great recall!':p>=50?'Solid — review the misses.':'Keep studying these terms.';
-  document.getElementById('quiz').innerHTML = `
-    <div class="vq-card" style="text-align:center">
-      <div style="font-size:2.2rem;margin-bottom:6px">${face}</div>
-      <div style="font-size:1.35rem;font-weight:800;margin-bottom:4px">${vqScore} / ${vqList.length} — ${p}%</div>
-      <div style="color:var(--m);font-size:.85rem;margin-bottom:20px">${msg}</div>
-      <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
-        <button class="vq-btn" onclick="startQuiz()">🔁 Retry</button>
-        <button class="vq-btn sec" onclick="exitQuiz()">📚 Back to dictionary</button>
-      </div>
-    </div>`;
-}
-
-/* ── INIT ─────────────────────────────────────────────── */
-buildChips();
-render();
-updateQuizBtn();
-</script>
+<script src="../shared/ui.js"></script>
+<script src="dict.js"></script>
 </body>
 </html>
