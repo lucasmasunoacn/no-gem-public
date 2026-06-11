@@ -983,6 +983,7 @@ window.TOPICS = [
     'wiki/concepts/Derivatives.md',
     'wiki/concepts/Capital Markets.md',
     'wiki/concepts/Value at Risk.md',
+    'raw/notes/fin-quant-risk-ja.md',
   ],
 
   slides: [
