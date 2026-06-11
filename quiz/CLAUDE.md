@@ -38,26 +38,26 @@ both pages. Home-card wiki sources are clickable links to the obsidian repo.
 
 ---
 
-## Learning Requests — processing `_requests.json`
+## Learning Requests — processing the capture files
 
-The site has a **📥 Requests** page (`quiz/requests.html`) where the user captures vocabulary and
-quiz ideas in their browser, then exports them. There is **no cloud AI and no Firestore** — the
-cloud bot does not process these. **You (local Claude Code) are the processor.**
+The site has a **📥 Requests** page (`quiz/requests.html`) where the user jots vocabulary and quiz
+ideas in their browser, then **downloads** two files into this repo. There is **no cloud AI and no
+Firestore** — the cloud bot does not process these. **You (local Claude Code) are the processor.**
 
-When the user says *"process the requests"* / *"process `quiz/_requests.json`"*:
+When the user says *"process the requests"*:
 
-1. Read **`quiz/_requests.json`** — an array of `{ kind: 'vocab'|'quiz', ... }`:
-   - `vocab`: `{ term, note?, cat?, ts }` — `note` disambiguates the intended sense (acronym, double-meaning, domain). **Honor it.**
-   - `quiz`:  `{ topic, sources?: string[], note?, ts }` — `sources` are wiki paths to read first.
-2. For each **vocab** request: research the term (use `note` for sense + the obsidian wiki / web),
-   then append an entry to **`../vocab/vocab.js`** (`window.VOCAB`) in shape
-   `{ term, full?, cat, def, wiki? }`. Pick/extend a `cat`; only set `wiki` to a page that exists.
-3. For each **quiz** request: follow the "Adding a New Topic" steps below — read `sources` (or find
-   the relevant `wiki/` pages) first, then append a topic to **`topics.js`** (`window.TOPICS`).
-4. After processing, **clear the handled items** from `_requests.json` (or delete the file) and
-   commit `vocab.js` / `topics.js`. GitHub Pages redeploys on push.
+1. **Vocabulary → `quiz/_vocab.txt`** — free text, one entry per line, usually `term — note` where
+   `note` disambiguates the intended sense (acronym, double-meaning, domain). **Honor the note.**
+   Research each term (note + the obsidian wiki / web) and append an entry to **`../vocab/vocab.js`**
+   (`window.VOCAB`) in shape `{ term, full?, cat, def, wiki? }`. Pick/extend a `cat`; only set `wiki`
+   to a page that actually exists.
+2. **Quizzes → `quiz/_quiz-requests.json`** — an array of `{ topic, sources?: string[], note?, ts }`.
+   `sources` are wiki paths (the user picked them by searching the obsidian repo). Read them first,
+   then follow "Adding a New Topic" below and append a topic to **`topics.js`** (`window.TOPICS`).
+3. After processing, **delete/empty** `_vocab.txt` and `_quiz-requests.json`, and commit
+   `vocab/vocab.js` / `quiz/topics.js`. GitHub Pages redeploys on push.
 
-The user can also just paste the **"📋 Copy for Claude"** markdown instead of committing the JSON —
+The user may also paste the **📋 Copy** markdown from either card instead of committing the files —
 same handling.
 
 ---
