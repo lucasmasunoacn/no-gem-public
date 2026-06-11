@@ -124,14 +124,13 @@ main{max-width:1020px;margin:0 auto;padding:28px 18px}
 
 /* ── SLIDE CHROME ─────────────────────────────────────── */
 .slide-bar{display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap}
-.sdots{display:flex;gap:5px}
+.sdots{display:flex;flex-wrap:wrap;gap:8px}
 .sdot{
-  width:24px;height:24px;border-radius:50%;border:2px solid var(--brd);
-  background:none;color:var(--m);cursor:pointer;font-size:.68rem;
+  width:38px;height:38px;border-radius:50%;border:none;
+  background:var(--surf);color:var(--m);cursor:pointer;font-size:.85rem;
   font-weight:700;transition:all .2s
 }
-.sdot.active{background:var(--acc);border-color:var(--acc);color:#fff}
-.sdot:hover:not(.active){border-color:var(--acc)}
+.sdot.active{background:var(--acc);color:#fff}
 .slbl{font-size:.78rem;color:var(--m);margin-left:4px}
 
 .slide{display:none}.slide.active{display:block}
@@ -213,9 +212,11 @@ main{max-width:1020px;margin:0 auto;padding:28px 18px}
 /* Slide footer */
 .sl-foot{
   display:flex;align-items:center;justify-content:space-between;
-  margin-top:18px;gap:10px
+  margin-top:18px;gap:12px
 }
-.sl-ctr{font-size:.8rem;color:var(--m);text-align:center}
+.sl-ctr{flex:1;font-size:.8rem;color:var(--m);text-align:center}
+/* keep slide nav balanced: arrows/labels size to content, counter fills the middle */
+.sl-foot .btn{width:auto;flex:0 0 auto;min-width:64px}
 
 /* ── QUIZ ─────────────────────────────────────────────── */
 .qhdr{display:flex;align-items:center;gap:10px;margin-bottom:16px}
@@ -319,15 +320,12 @@ footer,.wiki-src,.exp-src{border-color:var(--div)}
 .ig input,.ig select{box-shadow:none;border:1px solid var(--div)}
 .prog{background:var(--div);box-shadow:none}
 
-/* ── Liquid layer: glass header + fluid flow (neumorphic content stays opaque) ── */
+/* ── Header: neumorphic raised bar (soft drop shadow + top highlight) ── */
 header{
-  background:color-mix(in srgb,var(--bg) 60%,transparent);
-  -webkit-backdrop-filter:blur(16px) saturate(170%);
-  backdrop-filter:blur(16px) saturate(170%);
-  box-shadow:0 6px 22px rgba(40,50,90,.10),inset 0 1px 0 rgba(255,255,255,.6);
+  background:var(--bg);
+  box-shadow:0 6px 16px var(--d-sh),inset 0 1px 0 var(--l-sh);
   border-bottom:1px solid var(--div)
 }
-[data-theme="dark"] header{box-shadow:0 6px 22px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.06)}
 
 /* Springy interactions */
 .topic-card,.opt,.btn,.hbtn,.sdot,.back-btn{
@@ -362,7 +360,7 @@ header{
 
 <header>
   <div class="logo">🧠 Second Brain
-    <span>Karpathy LLM Wiki</span>
+    <span>Quiz</span>
   </div>
   <a class="hbtn icon-only" href="../vocab/" title="Vocabulary dictionary" aria-label="Vocabulary dictionary">📚</a>
   <a class="hbtn icon-only" href="requests.html" title="Learning requests" aria-label="Learning requests">📥</a>
@@ -425,7 +423,7 @@ header{
 </main>
 
 <footer>
-  Based on <a href="https://github.com/lucasmasunoacn/obsidian" target="_blank">Karpathy LLM Wiki</a> ·
+  Based on the <a href="https://github.com/lucasmasunoacn/obsidian" target="_blank">knowledge wiki</a> ·
   Add topics via <a href="topics.js" target="_blank">topics.js</a> ·
   See <a href="https://github.com/lucasmasunoacn/second-brain/blob/main/quiz/CLAUDE.md" target="_blank">CLAUDE.md</a> for instructions
 </footer>

@@ -1,6 +1,6 @@
 # second-brain
 
-Personal learning platform — interactive tools built on the [Karpathy LLM Wiki](https://github.com/lucasmasunoacn/obsidian).
+Personal learning platform — interactive tools built on a personal [knowledge wiki](https://github.com/lucasmasunoacn/obsidian).
 
 ## Tools
 
