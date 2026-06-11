@@ -60,10 +60,12 @@ main{max-width:1020px;margin:0 auto;padding:28px 18px}
   padding:11px 14px;color:var(--txt);font-size:.92rem;box-shadow:var(--sh)
 }
 .searchbox:focus{outline:none;border-color:var(--acc)}
-.chips{display:flex;gap:7px;flex-wrap:nowrap;overflow-x:auto;margin-top:11px;padding-bottom:5px;
-  -webkit-overflow-scrolling:touch;scrollbar-width:thin;scrollbar-color:var(--div) transparent}
-.chips::-webkit-scrollbar{height:5px}.chips::-webkit-scrollbar-thumb{background:var(--div);border-radius:99px}
-.chips .chip{flex:0 0 auto}
+.cat-select{width:100%;margin-top:11px;font-family:inherit;font-size:.84rem;font-weight:700;color:var(--txt);
+  background:var(--surf);border:none;border-radius:12px;padding:12px 40px 12px 16px;min-height:46px;cursor:pointer;
+  box-shadow:var(--sh-sm);appearance:none;-webkit-appearance:none;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23697089' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+  background-repeat:no-repeat;background-position:right 15px center}
+.cat-select:focus{outline:none;box-shadow:var(--sh-press)}
 .chip{
   padding:5px 12px;border-radius:18px;border:1px solid var(--brd);background:var(--card);
   color:var(--m);cursor:pointer;font-size:.76rem;font-weight:600;transition:all .15s;white-space:nowrap
@@ -76,11 +78,12 @@ main{max-width:1020px;margin:0 auto;padding:28px 18px}
 .group{margin-top:22px}
 .group-h{font-size:.82rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;
   color:var(--acc);margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid var(--brd)}
-.vlist{display:grid;gap:10px}
+.vlist{display:grid;gap:18px}
 .vcard{
-  background:var(--card);border:1px solid var(--brd);border-radius:11px;
-  padding:14px 16px;box-shadow:var(--sh)
+  background:var(--card);border:none;border-radius:16px;
+  padding:16px 18px;box-shadow:var(--sh)
 }
+.group{margin-top:26px}
 .vtop{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:5px}
 .vterm{font-size:1rem;font-weight:700}
 .vfull{font-size:.78rem;color:var(--m2)}
@@ -146,17 +149,13 @@ footer{border-color:var(--div)}
 .vq-go,.vq-btn{min-height:44px}
 .chip{min-height:34px;display:inline-flex;align-items:center}
 
-/* ── Liquid layer: glass header + controls + fluid flow ── */
+/* ── Header: neumorphic raised bar ── */
 header{
-  background:color-mix(in srgb,var(--bg) 60%,transparent);
-  -webkit-backdrop-filter:blur(16px) saturate(170%);
-  backdrop-filter:blur(16px) saturate(170%);
-  box-shadow:0 6px 22px rgba(40,50,90,.10),inset 0 1px 0 rgba(255,255,255,.6);
+  background:var(--bg);
+  box-shadow:0 6px 16px var(--d-sh),inset 0 1px 0 var(--l-sh);
   border-bottom:1px solid var(--div)
 }
-[data-theme="dark"] header{box-shadow:0 6px 22px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.06)}
-.controls{background:color-mix(in srgb,var(--bg) 80%,transparent);
-  -webkit-backdrop-filter:blur(10px) saturate(150%);backdrop-filter:blur(10px) saturate(150%)}
+.controls{background:var(--bg)}
 .chip,.vq-opt,.vq-go,.vq-btn{
   transition:box-shadow .18s cubic-bezier(.22,1,.36,1),transform .18s cubic-bezier(.22,1,.36,1),color .15s}
 .vq-opt:active:not(:disabled){transform:scale(.985)}
@@ -183,12 +182,12 @@ header{
 <main>
   <div class="hero">
     <h2>📚 Vocabulary Dictionary</h2>
-    <p>Key terms from the <a href="https://github.com/lucasmasunoacn/obsidian" target="_blank">Karpathy LLM Wiki</a> — finance, market infrastructure, and AI/LLM. Search or filter, and follow any term back to its source page.</p>
+    <p>Key terms from the <a href="https://github.com/lucasmasunoacn/obsidian" target="_blank">knowledge wiki</a> — finance, market infrastructure, and AI/LLM. Search or filter, and follow any term back to its source page.</p>
   </div>
 
   <div class="controls">
     <input class="searchbox" id="search" type="search" placeholder="🔍 Search terms and definitions…" oninput="render()" autocomplete="off">
-    <div class="chips" id="chips"></div>
+    <select class="cat-select" id="catSelect" onchange="setCat(this.value)" aria-label="Filter by category"></select>
     <div class="count" id="count"></div>
     <div class="quiz-launch">
       <button class="vq-go" id="quizBtn" onclick="startQuiz()">🎯 Quiz me on these (<span id="quizN">0</span>)</button>
@@ -201,7 +200,7 @@ header{
 </main>
 
 <footer>
-  Pulled from the <a href="https://github.com/lucasmasunoacn/obsidian" target="_blank">Karpathy LLM Wiki</a> ·
+  Pulled from the <a href="https://github.com/lucasmasunoacn/obsidian" target="_blank">knowledge wiki</a> ·
   Add terms via <a href="vocab.js" target="_blank">vocab.js</a> ·
   Back to the <a href="../quiz/">Quiz</a> · <a href="flashcards.html">Flashcards 🃏</a>
 </footer>
@@ -231,13 +230,13 @@ let activeCat = 'all';
 
 /* ── FILTER CHIPS ─────────────────────────────────────── */
 function buildChips(){
-  const chips = [['all', `All (${VOCAB.length})`]]
+  const opts = [['all', `All (${VOCAB.length})`]]
     .concat(CATS.map(c => [c, `${c} (${VOCAB.filter(v=>v.cat===c).length})`]));
-  document.getElementById('chips').innerHTML = chips.map(([id,label]) =>
-    `<button class="chip${id===activeCat?' active':''}" onclick="setCat(${JSON.stringify(id).replace(/"/g,'&quot;')})">${label}</button>`
+  document.getElementById('catSelect').innerHTML = opts.map(([id,label]) =>
+    `<option value="${esc(id)}"${id===activeCat?' selected':''}>${esc(label)}</option>`
   ).join('');
 }
-function setCat(c){ activeCat = c; buildChips(); render(); }
+function setCat(c){ activeCat = c; render(); }
 
 /* ── HIGHLIGHT MATCHES ────────────────────────────────── */
 function esc(s){ return s.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }

@@ -1,10 +1,10 @@
 /**
  * ══════════════════════════════════════════════════════════════
  *  SECOND BRAIN — Vocabulary Dictionary
- *  second-brain/quiz/vocab.js
+ *  second-brain/vocab/vocab.js
  * ══════════════════════════════════════════════════════════════
  *
- *  Terms are pulled from the Karpathy LLM Wiki (obsidian repo).
+ *  Terms are pulled from the knowledge wiki (obsidian repo).
  *  Each entry:
  *    term  — the headword (acronym or name)
  *    full  — full expansion (optional)

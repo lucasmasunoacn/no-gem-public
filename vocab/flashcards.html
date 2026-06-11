@@ -26,11 +26,9 @@
 body{font-family:'Inter','Noto Sans JP',-apple-system,BlinkMacSystemFont,'Segoe UI','Hiragino Kaku Gothic ProN','Yu Gothic',Meiryo,system-ui,sans-serif;background:var(--bg);
   color:var(--txt);min-height:100vh;transition:background .25s,color .25s}
 strong{font-weight:800}
-header{background:color-mix(in srgb,var(--bg) 60%,transparent);
-  -webkit-backdrop-filter:blur(16px) saturate(170%);backdrop-filter:blur(16px) saturate(170%);
-  box-shadow:0 6px 22px rgba(40,50,90,.10),inset 0 1px 0 rgba(255,255,255,.6);border-bottom:1px solid var(--div);
+header{background:var(--bg);
+  box-shadow:0 6px 16px var(--d-sh),inset 0 1px 0 var(--l-sh);border-bottom:1px solid var(--div);
   padding:14px 24px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100}
-[data-theme="dark"] header{box-shadow:0 6px 22px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.06)}
 .logo{font-size:1.1rem;font-weight:800;color:var(--acc);flex:1}
 .logo span{color:var(--txt);font-weight:400;font-size:.85rem;margin-left:8px}
 .hbtn{border:none;background:var(--surf);color:var(--m);cursor:pointer;border-radius:50%;
@@ -40,15 +38,12 @@ header{background:color-mix(in srgb,var(--bg) 60%,transparent);
 main{max-width:680px;margin:0 auto;padding:24px 18px 60px}
 
 /* Deck picker */
-.decks{display:flex;gap:8px;flex-wrap:nowrap;overflow-x:auto;margin-bottom:14px;padding-bottom:6px;
-  -webkit-overflow-scrolling:touch;scrollbar-width:thin;scrollbar-color:var(--div) transparent}
-.decks::-webkit-scrollbar{height:5px}.decks::-webkit-scrollbar-thumb{background:var(--div);border-radius:99px}
-.deck{flex:0 0 auto;white-space:nowrap;border:none;background:var(--surf);color:var(--m);border-radius:99px;
-  padding:7px 14px;font-size:.78rem;font-weight:700;cursor:pointer;box-shadow:var(--sh-sm);min-height:36px;
-  transition:box-shadow .14s,color .15s}
-.deck:hover{color:var(--acc)}.deck:active{box-shadow:var(--sh-press)}
-.deck.active{color:#fff;background:var(--acc)}
-.deck .n{opacity:.7;font-weight:600;margin-left:3px}
+.cat-select{width:100%;margin-bottom:14px;font-family:inherit;font-size:.84rem;font-weight:700;color:var(--txt);
+  background:var(--surf);border:none;border-radius:12px;padding:12px 40px 12px 16px;min-height:46px;cursor:pointer;
+  box-shadow:var(--sh-sm);appearance:none;-webkit-appearance:none;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23697089' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+  background-repeat:no-repeat;background-position:right 15px center}
+.cat-select:focus{outline:none;box-shadow:var(--sh-press)}
 
 /* Stat row */
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
@@ -120,7 +115,7 @@ footer a{color:var(--acc)}
 </header>
 
 <main>
-  <div class="decks" id="decks"></div>
+  <select class="cat-select" id="deckSelect" onchange="setDeck(this.value)" aria-label="Choose deck"></select>
   <div class="stats" id="stats"></div>
   <div class="dir-row"><button class="tool dir-btn" id="dirBtn" onclick="toggleDir()">🔁 Term → Definition</button></div>
   <div id="stage"></div>
@@ -194,9 +189,9 @@ function counts(){
 
 /* ── Render ── */
 function renderDecks(){
-  const all=[['all',`All`,VOCAB.length]].concat(CATS.map(c=>[c,c,VOCAB.filter(v=>v.cat===c).length]));
-  document.getElementById('decks').innerHTML=all.map(([id,label,n])=>
-    `<button class="deck${id===activeDeck?' active':''}" onclick="setDeck(${JSON.stringify(id).replace(/"/g,'&quot;')})">${esc(label)}<span class="n">${n}</span></button>`).join('');
+  const all=[['all','All',VOCAB.length]].concat(CATS.map(c=>[c,c,VOCAB.filter(v=>v.cat===c).length]));
+  document.getElementById('deckSelect').innerHTML=all.map(([id,label,n])=>
+    `<option value="${esc(id)}"${id===activeDeck?' selected':''}>${esc(label)} (${n})</option>`).join('');
 }
 function renderStats(){
   const c=counts();
