@@ -9,23 +9,25 @@ This file tells Claude Code how to extend the quiz.
 
 ```
 quiz/
-├── index.html   ← App shell + quiz/slides. Edit only for new calc types or app features.
-├── topics.js    ← ALL quiz content (window.TOPICS). This is what you usually edit.
-├── vocab.html   ← Standalone Vocabulary Dictionary page (search + category filter).
-├── vocab.js     ← Vocabulary terms (window.VOCAB). Edit to add/remove glossary terms.
-└── CLAUDE.md    ← This file.
+├── index.html     ← Quiz app shell + slides. Edit only for new calc types or app features.
+├── topics.js      ← ALL quiz content (window.TOPICS). This is what you usually edit.
+├── requests.html  ← 📥 "Learning Requests" capture page → exports _requests.json.
+└── CLAUDE.md      ← This file.
+
+../vocab/            ← Vocabulary now lives in its OWN directory (see vocab/CLAUDE.md):
+├── index.html      ← Dictionary: search + filter + 🎯 MCQ quiz mode (window.VOCAB).
+├── flashcards.html ← Anki-style spaced-repetition (SM-2) flashcards.
+└── vocab.js        ← Vocabulary terms (window.VOCAB).
 ```
 
 `index.html` reads `window.TOPICS` from `topics.js` and renders everything dynamically.
 A new entry in `TOPICS` automatically creates a new card on the home screen.
 
-### Vocabulary dictionary (`vocab.html` + `vocab.js`)
+### Vocabulary (moved to `../vocab/`)
 
-`vocab.html` is a separate page (linked from the header as **📚 Vocabulary**) that reads
-`window.VOCAB` from `vocab.js`. Each entry: `{ term, full?, cat, def, wiki? }`. `def` allows
-`<strong>`/`<em>`; `wiki` is a path into the obsidian repo (renders a clickable 📂 source link —
-**only point it at a page that actually exists**, or omit it). Terms are grouped by `cat` and the
-filter chips are generated from the distinct `cat` values, so adding a new category is automatic.
+Vocabulary now lives in its own top-level **`vocab/`** directory — see **`vocab/CLAUDE.md`** for
+its data model and the flashcards app. The quiz only links to it (header **📚**). Entries
+(`window.VOCAB` in `vocab/vocab.js`) have shape `{ term, full?, cat, def, wiki? }`.
 
 ### Hiding topics (no code needed by the user)
 
@@ -33,6 +35,30 @@ The home screen has an **⚙️ Manage topics** mode: each card gets a ✕ Hide 
 Hidden topic ids are stored in `localStorage['quiz-hidden-topics']` — per-browser and reversible,
 **nothing is deleted from `topics.js`**. The theme toggle shares `localStorage['quiz-theme']` across
 both pages. Home-card wiki sources are clickable links to the obsidian repo.
+
+---
+
+## Learning Requests — processing `_requests.json`
+
+The site has a **📥 Requests** page (`quiz/requests.html`) where the user captures vocabulary and
+quiz ideas in their browser, then exports them. There is **no cloud AI and no Firestore** — the
+cloud bot does not process these. **You (local Claude Code) are the processor.**
+
+When the user says *"process the requests"* / *"process `quiz/_requests.json`"*:
+
+1. Read **`quiz/_requests.json`** — an array of `{ kind: 'vocab'|'quiz', ... }`:
+   - `vocab`: `{ term, note?, cat?, ts }` — `note` disambiguates the intended sense (acronym, double-meaning, domain). **Honor it.**
+   - `quiz`:  `{ topic, sources?: string[], note?, ts }` — `sources` are wiki paths to read first.
+2. For each **vocab** request: research the term (use `note` for sense + the obsidian wiki / web),
+   then append an entry to **`../vocab/vocab.js`** (`window.VOCAB`) in shape
+   `{ term, full?, cat, def, wiki? }`. Pick/extend a `cat`; only set `wiki` to a page that exists.
+3. For each **quiz** request: follow the "Adding a New Topic" steps below — read `sources` (or find
+   the relevant `wiki/` pages) first, then append a topic to **`topics.js`** (`window.TOPICS`).
+4. After processing, **clear the handled items** from `_requests.json` (or delete the file) and
+   commit `vocab.js` / `topics.js`. GitHub Pages redeploys on push.
+
+The user can also just paste the **"📋 Copy for Claude"** markdown instead of committing the JSON —
+same handling.
 
 ---
 
