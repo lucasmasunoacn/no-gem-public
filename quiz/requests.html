@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Second Brain — Requests</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* Shared neumorphism tokens (kept in sync with index.html / vocab.html) */
+:root{
+  --bg:#e7eaf1;--surf:#e7eaf1;--card:#e7eaf1;--brd:transparent;--div:#ccd3e0;
+  --acc:#5865f2;--grn:#10b981;--red:#ef4444;--yel:#f59e0b;--pur:#7c3aed;
+  --txt:#2b3350;--m:#697089;--m2:#8a92a6;
+  --d-sh:#b6bfd0;--l-sh:#ffffff;
+  --sh:6px 6px 14px var(--d-sh),-6px -6px 14px var(--l-sh);
+  --sh-lg:10px 10px 22px var(--d-sh),-8px -8px 20px var(--l-sh);
+  --sh-sm:4px 4px 9px var(--d-sh),-4px -4px 9px var(--l-sh);
+  --sh-press:inset 2px 2px 4px var(--d-sh),inset -2px -2px 4px var(--l-sh);
+}
+[data-theme="dark"]{
+  --bg:#2a2e37;--surf:#2a2e37;--card:#2a2e37;--brd:transparent;--div:#3a3f4b;
+  --txt:#e6e9f0;--m:#9aa3b5;--m2:#7f8799;
+  --d-sh:#1f2228;--l-sh:#353a45;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Nunito','Segoe UI',system-ui,-apple-system,sans-serif;
+  background:var(--bg);color:var(--txt);min-height:100vh;transition:background .25s,color .25s}
+strong{font-weight:800}
+header{
+  background:color-mix(in srgb,var(--bg) 60%,transparent);
+  -webkit-backdrop-filter:blur(16px) saturate(170%);backdrop-filter:blur(16px) saturate(170%);
+  box-shadow:0 6px 22px rgba(40,50,90,.10),inset 0 1px 0 rgba(255,255,255,.6);
+  border-bottom:1px solid var(--div);
+  padding:14px 24px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100}
+[data-theme="dark"] header{box-shadow:0 6px 22px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.06)}
+.logo{font-size:1.1rem;font-weight:800;color:var(--acc);flex:1}
+.logo span{color:var(--txt);font-weight:400;font-size:.85rem;margin-left:8px}
+.hbtn{min-height:40px;border:none;background:var(--surf);color:var(--m);cursor:pointer;
+  border-radius:50%;width:40px;height:40px;display:inline-flex;align-items:center;justify-content:center;
+  font-size:1.05rem;box-shadow:var(--sh-sm);text-decoration:none;transition:box-shadow .14s,color .15s}
+.hbtn:hover{color:var(--acc)}.hbtn:active{box-shadow:var(--sh-press)}
+main{max-width:760px;margin:0 auto;padding:26px 18px}
+.hero{text-align:center;padding:18px 0 8px}
+.hero h2{font-size:1.5rem;font-weight:800;margin-bottom:8px}
+.hero p{color:var(--m);font-size:.88rem;max-width:560px;margin:0 auto;line-height:1.6}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:22px}
+@media(max-width:640px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border-radius:16px;padding:20px;box-shadow:var(--sh)}
+.card h3{font-size:1rem;font-weight:800;margin-bottom:4px}
+.card .sub{font-size:.76rem;color:var(--m2);margin-bottom:14px;line-height:1.5}
+label{display:block;font-size:.74rem;color:var(--m);font-weight:700;margin:10px 0 4px}
+input,textarea,select{width:100%;font-family:inherit;font-size:.86rem;color:var(--txt);
+  background:var(--surf);border:1px solid var(--div);border-radius:10px;padding:10px 12px;outline:none}
+input:focus,textarea:focus,select:focus{border-color:var(--acc)}
+textarea{resize:vertical;min-height:60px;line-height:1.5}
+.add-btn{margin-top:14px;width:100%;min-height:44px;border:none;border-radius:12px;background:var(--acc);
+  color:#fff;font-weight:700;font-size:.88rem;cursor:pointer;box-shadow:var(--sh-sm);transition:box-shadow .14s,filter .15s}
+.add-btn:hover{filter:brightness(1.07)}.add-btn:active{box-shadow:var(--sh-press)}
+.saved{margin-top:26px}
+.saved-h{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.saved-h h3{font-size:1rem;font-weight:800;flex:1}
+.tool{min-height:38px;border:none;border-radius:10px;background:var(--surf);color:var(--m);
+  font-weight:700;font-size:.76rem;padding:0 14px;cursor:pointer;box-shadow:var(--sh-sm);transition:box-shadow .14s,color .15s}
+.tool:hover{color:var(--acc)}.tool:active{box-shadow:var(--sh-press)}
+.tool:disabled{opacity:.45;cursor:default}
+.req{background:var(--card);border-radius:12px;padding:12px 14px;box-shadow:var(--sh-sm);margin-bottom:9px;
+  display:flex;align-items:flex-start;gap:10px}
+.req .badge{font-size:.62rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;padding:3px 8px;
+  border-radius:99px;background:var(--surf);box-shadow:var(--sh-sm);color:var(--acc);white-space:nowrap;flex-shrink:0}
+.req .badge.quiz{color:var(--pur)}
+.req .body{flex:1;min-width:0}
+.req .ttl{font-weight:700;font-size:.9rem}
+.req .meta{font-size:.74rem;color:var(--m);line-height:1.5;margin-top:2px;word-break:break-word}
+.req .del{border:none;background:none;color:var(--m2);cursor:pointer;font-size:1rem;padding:2px 4px;border-radius:8px}
+.req .del:hover{color:var(--red)}
+.empty{text-align:center;color:var(--m2);font-size:.88rem;padding:30px 0}
+.note{margin-top:16px;font-size:.74rem;color:var(--m2);line-height:1.6;
+  background:var(--card);border:1px solid var(--div);border-radius:12px;padding:12px 14px}
+.note code{font-family:ui-monospace,Menlo,Consolas,monospace;background:var(--surf);padding:1px 5px;border-radius:5px}
+footer{text-align:center;padding:24px;font-size:.72rem;color:var(--m2);border-top:1px solid var(--div);margin-top:36px}
+@media (prefers-reduced-motion:reduce){*,::before,::after{animation-duration:.001ms!important;transition-duration:.001ms!important}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🧠 Second Brain <span>Requests</span></div>
+  <a class="hbtn" href="index.html" title="Back to quiz" aria-label="Back to quiz">←</a>
+  <button class="hbtn" id="theme-btn" onclick="toggleTheme()" title="Toggle light/dark" aria-label="Toggle light/dark">🌙</button>
+</header>
+
+<main>
+  <div class="hero">
+    <h2>📥 Learning Requests</h2>
+    <p>Jot down vocabulary or quiz ideas here. They're saved in your browser so you can come back any time, then <strong>export</strong> them and let your local Claude Code client research &amp; build them — no cloud AI involved.</p>
+  </div>
+
+  <div class="grid">
+    <!-- Vocabulary -->
+    <div class="card">
+      <h3>📚 Vocabulary</h3>
+      <div class="sub">A word/term + an optional note so Claude knows the intended sense (acronym, double-meaning, domain).</div>
+      <label for="v-term">Term *</label>
+      <input id="v-term" type="text" placeholder="e.g. Alpha, RAG, Theta" autocomplete="off">
+      <label for="v-note">Disambiguation / note</label>
+      <textarea id="v-note" placeholder="e.g. the finance 'excess return' sense, not the alphabet"></textarea>
+      <label for="v-cat">Category (optional)</label>
+      <input id="v-cat" type="text" placeholder="e.g. Finance · Risk, AI &amp; LLM" autocomplete="off">
+      <button class="add-btn" onclick="addVocab()">+ Save vocabulary request</button>
+    </div>
+
+    <!-- Quiz -->
+    <div class="card">
+      <h3>📝 Quiz</h3>
+      <div class="sub">A topic to turn into a quiz. Optionally point Claude at specific wiki pages to base it on.</div>
+      <label for="q-topic">Topic *</label>
+      <input id="q-topic" type="text" placeholder="e.g. Algorithmic Trading" autocomplete="off">
+      <label for="q-src">Wiki source files (optional, one per line)</label>
+      <textarea id="q-src" placeholder="wiki/concepts/Algorithmic Trading.md&#10;wiki/concepts/Smart Order Routing.md"></textarea>
+      <label for="q-note">Notes (optional)</label>
+      <textarea id="q-note" placeholder="e.g. focus on VWAP/TWAP, ~10 questions"></textarea>
+      <button class="add-btn" onclick="addQuiz()">+ Save quiz request</button>
+    </div>
+  </div>
+
+  <div class="saved">
+    <div class="saved-h">
+      <h3>🗂️ Saved (<span id="count">0</span>)</h3>
+      <button class="tool" id="copyBtn" onclick="copyForClaude()">📋 Copy for Claude</button>
+      <button class="tool" id="dlBtn" onclick="downloadJson()">⬇ Download _requests.json</button>
+      <button class="tool" id="clearBtn" onclick="clearAll()">🗑 Clear</button>
+    </div>
+    <div id="list"></div>
+  </div>
+
+  <div class="note">
+    <strong>How to process:</strong> click <code>⬇ Download _requests.json</code> and drop the file into
+    <code>quiz/_requests.json</code> in the second-brain repo (or just <code>📋 Copy for Claude</code> and paste it).
+    Then in your local Claude Code client: <em>“process quiz/_requests.json — research the vocab into vocab.js and build the quizzes into topics.js, following quiz/CLAUDE.md.”</em>
+    Nothing is sent anywhere from this page; entries live in your browser until you clear them.
+  </div>
+</main>
+
+<footer>Saved locally in your browser · Export → repo → local Claude Code · Back to the <a href="index.html" style="color:var(--acc)">Quiz</a></footer>
+
+<script>
+const root=document.documentElement, themeBtn=document.getElementById('theme-btn');
+const initTheme=localStorage.getItem('quiz-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
+root.setAttribute('data-theme',initTheme); themeBtn.textContent=initTheme==='dark'?'☀️':'🌙';
+function toggleTheme(){const t=root.getAttribute('data-theme')==='dark'?'light':'dark';
+  root.setAttribute('data-theme',t);themeBtn.textContent=t==='dark'?'☀️':'🌙';localStorage.setItem('quiz-theme',t);}
+
+const KEY='sb-requests';
+const load=()=>{try{return JSON.parse(localStorage.getItem(KEY)||'[]');}catch{return[];}};
+const save=(a)=>localStorage.setItem(KEY,JSON.stringify(a));
+function esc(s){return String(s||'').replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));}
+function uid(){return Math.random().toString(36).slice(2,9);}
+
+function addVocab(){
+  const term=document.getElementById('v-term').value.trim();
+  if(!term){document.getElementById('v-term').focus();return;}
+  const a=load();
+  a.push({id:uid(),kind:'vocab',term,note:document.getElementById('v-note').value.trim(),
+    cat:document.getElementById('v-cat').value.trim(),ts:new Date().toISOString()});
+  save(a);
+  document.getElementById('v-term').value='';document.getElementById('v-note').value='';document.getElementById('v-cat').value='';
+  document.getElementById('v-term').focus(); render();
+}
+function addQuiz(){
+  const topic=document.getElementById('q-topic').value.trim();
+  if(!topic){document.getElementById('q-topic').focus();return;}
+  const src=document.getElementById('q-src').value.split('\n').map(s=>s.trim()).filter(Boolean);
+  const a=load();
+  a.push({id:uid(),kind:'quiz',topic,sources:src,note:document.getElementById('q-note').value.trim(),ts:new Date().toISOString()});
+  save(a);
+  document.getElementById('q-topic').value='';document.getElementById('q-src').value='';document.getElementById('q-note').value='';
+  document.getElementById('q-topic').focus(); render();
+}
+function del(id){save(load().filter(x=>x.id!==id));render();}
+function clearAll(){if(confirm('Clear all saved requests?')){save([]);render();}}
+
+function render(){
+  const a=load();
+  document.getElementById('count').textContent=a.length;
+  ['copyBtn','dlBtn','clearBtn'].forEach(id=>document.getElementById(id).disabled=!a.length);
+  const list=document.getElementById('list');
+  if(!a.length){list.innerHTML='<div class="empty">No saved requests yet — add a vocabulary or quiz idea above.</div>';return;}
+  list.innerHTML=a.slice().reverse().map(r=>{
+    if(r.kind==='vocab'){
+      const meta=[r.note?esc(r.note):'',r.cat?`<em>${esc(r.cat)}</em>`:''].filter(Boolean).join(' · ');
+      return `<div class="req"><span class="badge">vocab</span><div class="body"><div class="ttl">${esc(r.term)}</div>${meta?`<div class="meta">${meta}</div>`:''}</div><button class="del" onclick="del('${r.id}')" title="Delete">✕</button></div>`;
+    }
+    const bits=[r.note?esc(r.note):'',r.sources&&r.sources.length?`sources: ${r.sources.map(esc).join(', ')}`:''].filter(Boolean).join(' · ');
+    return `<div class="req"><span class="badge quiz">quiz</span><div class="body"><div class="ttl">${esc(r.topic)}</div>${bits?`<div class="meta">${bits}</div>`:''}</div><button class="del" onclick="del('${r.id}')" title="Delete">✕</button></div>`;
+  }).join('');
+}
+
+function toMarkdown(){
+  const a=load();
+  const v=a.filter(x=>x.kind==='vocab'), q=a.filter(x=>x.kind==='quiz');
+  let out=`# Second Brain — pending learning requests (${a.length})\n`;
+  if(v.length){out+=`\n## Vocabulary (${v.length})\n`+v.map(r=>`- **${r.term}**`+(r.note?` — ${r.note}`:'')+(r.cat?` _(category: ${r.cat})_`:'')).join('\n')+'\n';}
+  if(q.length){out+=`\n## Quizzes (${q.length})\n`+q.map(r=>`- **${r.topic}**`+(r.note?` — ${r.note}`:'')+(r.sources&&r.sources.length?`\n  - sources: ${r.sources.join(', ')}`:'')).join('\n')+'\n';}
+  out+=`\nProcess per quiz/CLAUDE.md: research vocab → vocab.js (window.VOCAB), build quizzes → topics.js (window.TOPICS).\n`;
+  return out;
+}
+async function copyForClaude(){
+  try{await navigator.clipboard.writeText(toMarkdown());const b=document.getElementById('copyBtn');const t=b.textContent;b.textContent='✓ Copied';setTimeout(()=>b.textContent=t,1400);}
+  catch{alert(toMarkdown());}
+}
+function downloadJson(){
+  const blob=new Blob([JSON.stringify(load(),null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);const a=document.createElement('a');
+  a.href=url;a.download='_requests.json';a.click();URL.revokeObjectURL(url);
+}
+render();
+</script>
+</body>
+</html>
