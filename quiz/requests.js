@@ -66,21 +66,13 @@ async function qcopy(e) { try { await navigator.clipboard.writeText(quizMd()); t
 function qdownload() { dl('_quiz-requests.json', JSON.stringify(qload(), null, 2), 'application/json'); }
 
 /* ── Obsidian wiki search ─────────────────────────────── */
-const OBKEY = 'sb-ob-tree'; let obFiles = [];
-
-async function loadObsidian() {
-  try {
-    const c = JSON.parse(localStorage.getItem(OBKEY) || 'null');
-    if (c && c.files && (Date.now() - c.ts) < 216e5) { obFiles = c.files; return; }
-    const r = await fetch('https://api.github.com/repos/lucasmasunoacn/obsidian/git/trees/main?recursive=1');
-    if (!r.ok) throw 0;
-    const d = await r.json();
-    obFiles = (d.tree || []).map(t => t.path).filter(p => /^wiki\/.*\.md$/i.test(p));
-    localStorage.setItem(OBKEY, JSON.stringify({ ts: Date.now(), files: obFiles }));
-  } catch {
-    obFiles = null;
-    document.getElementById('srcSearch').placeholder = '🔍 type a wiki path, press Enter to add';
-  }
+let obFiles = [];
+const _K2 = 'sb2026xw';
+function _dec2(h) {
+  return (h.match(/.{2}/g)||[]).map((x,i)=>String.fromCharCode(parseInt(x,16)^_K2.charCodeAt(i%_K2.length))).join('');
+}
+function loadObsidian() {
+  obFiles = (window.OB_TREE || []).map(_dec2).filter(Boolean);
 }
 function onSrcSearch() {
   const q = document.getElementById('srcSearch').value.trim().toLowerCase();

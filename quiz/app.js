@@ -15,8 +15,14 @@ const WIKI_BASE = 'https://github.com/lucasmasunoacn/obsidian/blob/main/';
 let manageMode = false;
 
 /* ── New-request form state ─────────────────────────── */
-const OBKEY = 'sb-ob-tree', QKEY = 'sb-quiz';
+const QKEY = 'sb-quiz';
 let obFiles = null, nrSrcs = [];
+
+/* Decode key for wiki-tree.js — XOR+hex, key lives here only */
+const _K = 'sb2026xw';
+function _dec(h) {
+  return (h.match(/.{2}/g)||[]).map((x,i)=>String.fromCharCode(parseInt(x,16)^_K.charCodeAt(i%_K.length))).join('');
+}
 
 function getHidden() {
   try { return JSON.parse(localStorage.getItem('quiz-hidden-topics') || '[]'); }
@@ -110,17 +116,9 @@ function toggleNR() {
   buildHome();
 }
 
-async function loadOb() {
+function loadOb() {
   if (obFiles !== null) return;
-  try {
-    const c = JSON.parse(localStorage.getItem(OBKEY) || 'null');
-    if (c?.files && (Date.now() - c.ts) < 216e5) { obFiles = c.files; return; }
-    const r = await fetch('https://api.github.com/repos/lucasmasunoacn/obsidian/git/trees/main?recursive=1');
-    if (!r.ok) throw 0;
-    const d = await r.json();
-    obFiles = (d.tree || []).map(t => t.path).filter(p => /^wiki\/.*\.md$/i.test(p));
-    localStorage.setItem(OBKEY, JSON.stringify({ ts: Date.now(), files: obFiles }));
-  } catch { obFiles = []; }
+  obFiles = (window.OB_TREE || []).map(_dec).filter(Boolean);
 }
 
 function nrSearch() {

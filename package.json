@@ -1,0 +1,8 @@
+{
+  "name": "second-brain",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "gen-tree": "node scripts/gen-wiki-tree.js"
+  }
+}
