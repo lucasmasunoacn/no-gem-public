@@ -6,7 +6,7 @@
 <title>Second Brain — Flashcards</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+JP:wght@400;500;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#e7eaf1;--surf:#e7eaf1;--card:#e7eaf1;--brd:transparent;--div:#ccd3e0;
@@ -23,7 +23,7 @@
   --txt:#e6e9f0;--m:#9aa3b5;--m2:#7f8799;--d-sh:#1f2228;--l-sh:#353a45;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Nunito','Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);
+body{font-family:'Inter','Noto Sans JP',-apple-system,BlinkMacSystemFont,'Segoe UI','Hiragino Kaku Gothic ProN','Yu Gothic',Meiryo,system-ui,sans-serif;background:var(--bg);
   color:var(--txt);min-height:100vh;transition:background .25s,color .25s}
 strong{font-weight:800}
 header{background:color-mix(in srgb,var(--bg) 60%,transparent);
@@ -40,16 +40,19 @@ header{background:color-mix(in srgb,var(--bg) 60%,transparent);
 main{max-width:680px;margin:0 auto;padding:24px 18px 60px}
 
 /* Deck picker */
-.decks{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
-.deck{border:none;background:var(--surf);color:var(--m);border-radius:99px;padding:7px 14px;font-size:.78rem;
-  font-weight:700;cursor:pointer;box-shadow:var(--sh-sm);min-height:36px;transition:box-shadow .14s,color .15s}
+.decks{display:flex;gap:8px;flex-wrap:nowrap;overflow-x:auto;margin-bottom:14px;padding-bottom:6px;
+  -webkit-overflow-scrolling:touch;scrollbar-width:thin;scrollbar-color:var(--div) transparent}
+.decks::-webkit-scrollbar{height:5px}.decks::-webkit-scrollbar-thumb{background:var(--div);border-radius:99px}
+.deck{flex:0 0 auto;white-space:nowrap;border:none;background:var(--surf);color:var(--m);border-radius:99px;
+  padding:7px 14px;font-size:.78rem;font-weight:700;cursor:pointer;box-shadow:var(--sh-sm);min-height:36px;
+  transition:box-shadow .14s,color .15s}
 .deck:hover{color:var(--acc)}.deck:active{box-shadow:var(--sh-press)}
 .deck.active{color:#fff;background:var(--acc)}
 .deck .n{opacity:.7;font-weight:600;margin-left:3px}
 
 /* Stat row */
-.stats{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap}
-.stat{flex:1;min-width:78px;background:var(--card);border-radius:14px;padding:10px 12px;box-shadow:var(--sh-sm);text-align:center}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.stat{background:var(--card);border-radius:14px;padding:11px 8px;box-shadow:var(--sh-sm);text-align:center}
 .stat .v{font-size:1.25rem;font-weight:800;line-height:1.1}
 .stat .l{font-size:.66rem;color:var(--m2);text-transform:uppercase;letter-spacing:.04em;margin-top:2px}
 .stat.new .v{color:var(--blue)} .stat.due .v{color:var(--yel)} .stat.done .v{color:var(--grn)}
@@ -100,7 +103,8 @@ main{max-width:680px;margin:0 auto;padding:24px 18px 60px}
   border-radius:12px;cursor:pointer;box-shadow:var(--sh-sm);transition:box-shadow .14s,color .15s}
 .tool:hover{color:var(--acc)}.tool:active{box-shadow:var(--sh-press)}
 .tool.accent{background:var(--acc);color:#fff}
-.dir{margin-left:auto;font-size:.72rem;color:var(--m)}
+.dir-row{display:flex;justify-content:flex-end;margin-bottom:8px}
+.dir-btn{min-height:34px;font-size:.72rem;padding:0 12px}
 footer{text-align:center;padding:24px;font-size:.72rem;color:var(--m2);border-top:1px solid var(--div);margin-top:30px}
 footer a{color:var(--acc)}
 @media (prefers-reduced-motion:reduce){.fcard{transition:none}*,::before,::after{animation-duration:.001ms!important}}
@@ -117,12 +121,8 @@ footer a{color:var(--acc)}
 
 <main>
   <div class="decks" id="decks"></div>
-  <div style="display:flex;align-items:center;margin-bottom:10px">
-    <div class="stats" id="stats" style="flex:1"></div>
-  </div>
-  <div style="display:flex;align-items:center;margin-bottom:6px">
-    <span class="dir"><button class="tool" id="dirBtn" onclick="toggleDir()" style="min-height:34px;font-size:.72rem;padding:0 12px">🔁 Term → Definition</button></span>
-  </div>
+  <div class="stats" id="stats"></div>
+  <div class="dir-row"><button class="tool dir-btn" id="dirBtn" onclick="toggleDir()">🔁 Term → Definition</button></div>
   <div id="stage"></div>
 </main>
 
