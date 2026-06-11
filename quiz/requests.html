@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
-/* Shared neumorphism tokens (kept in sync with index.html / vocab.html) */
+/* Shared neumorphism tokens (kept in sync with quiz/index.html + vocab/) */
 :root{
   --bg:#e7eaf1;--surf:#e7eaf1;--card:#e7eaf1;--brd:transparent;--div:#ccd3e0;
   --acc:#5865f2;--grn:#10b981;--red:#ef4444;--yel:#f59e0b;--pur:#7c3aed;
@@ -138,7 +138,7 @@ footer{text-align:center;padding:24px;font-size:.72rem;color:var(--m2);border-to
   <div class="note">
     <strong>How to process:</strong> click <code>⬇ Download _requests.json</code> and drop the file into
     <code>quiz/_requests.json</code> in the second-brain repo (or just <code>📋 Copy for Claude</code> and paste it).
-    Then in your local Claude Code client: <em>“process quiz/_requests.json — research the vocab into vocab.js and build the quizzes into topics.js, following quiz/CLAUDE.md.”</em>
+    Then in your local Claude Code client: <em>“process quiz/_requests.json — research the vocab into vocab/vocab.js and build the quizzes into quiz/topics.js, following vocab/CLAUDE.md and quiz/CLAUDE.md.”</em>
     Nothing is sent anywhere from this page; entries live in your browser until you clear them.
   </div>
 </main>
@@ -203,7 +203,7 @@ function toMarkdown(){
   let out=`# Second Brain — pending learning requests (${a.length})\n`;
   if(v.length){out+=`\n## Vocabulary (${v.length})\n`+v.map(r=>`- **${r.term}**`+(r.note?` — ${r.note}`:'')+(r.cat?` _(category: ${r.cat})_`:'')).join('\n')+'\n';}
   if(q.length){out+=`\n## Quizzes (${q.length})\n`+q.map(r=>`- **${r.topic}**`+(r.note?` — ${r.note}`:'')+(r.sources&&r.sources.length?`\n  - sources: ${r.sources.join(', ')}`:'')).join('\n')+'\n';}
-  out+=`\nProcess per quiz/CLAUDE.md: research vocab → vocab.js (window.VOCAB), build quizzes → topics.js (window.TOPICS).\n`;
+  out+=`\nProcess: research vocab → vocab/vocab.js (window.VOCAB); build quizzes → quiz/topics.js (window.TOPICS). See vocab/CLAUDE.md + quiz/CLAUDE.md.\n`;
   return out;
 }
 async function copyForClaude(){
