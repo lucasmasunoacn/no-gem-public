@@ -14,6 +14,10 @@ window.addEventListener('themechange', () => {
 const WIKI_BASE = 'https://github.com/lucasmasunoacn/obsidian/blob/main/';
 let manageMode = false;
 
+/* ── New-request form state ─────────────────────────── */
+const OBKEY = 'sb-ob-tree', QKEY = 'sb-quiz';
+let obFiles = null, nrSrcs = [];
+
 function getHidden() {
   try { return JSON.parse(localStorage.getItem('quiz-hidden-topics') || '[]'); }
   catch { return []; }
@@ -67,10 +71,16 @@ function buildHome() {
   const topics = window.TOPICS || [];
   const hidden = getHidden();
   const hiddenCount = topics.filter(t => hidden.includes(t.id)).length;
+  const nrOpen = !(document.getElementById('nr-wrap')?.hidden ?? true);
+  const pending = JSON.parse(localStorage.getItem(QKEY) || '[]').length;
+  const pendingBadge = pending && !nrOpen
+    ? `<a class="hbtn pill" href="requests.html" style="font-size:.72rem;text-decoration:none">📥 ${pending} pending</a>` : '';
 
   const toolbar = `
     <div class="home-toolbar">
-      <button class="hbtn pill" onclick="toggleManage()">${manageMode ? '✓ Done' : '⚙️ Manage topics'}</button>
+      <button class="hbtn pill" id="nr-toggle-btn" onclick="toggleNR()">${nrOpen ? '✕ Close' : '+ New request'}</button>
+      ${pendingBadge}
+      <button class="hbtn pill" onclick="toggleManage()" style="margin-left:auto">${manageMode ? '✓ Done' : '⚙️ Manage topics'}</button>
       ${manageMode
         ? `<span class="ht-note">Hide topics you don't want on the home screen — saved in this browser, reversible anytime.</span>
            ${hiddenCount ? `<span class="spacer"></span><button class="hbtn pill" onclick="resetHidden()">↺ Show all (${hiddenCount} hidden)</button>` : ''}`
@@ -88,6 +98,71 @@ function buildHome() {
       <div class="tc-desc">Edit <code>topics.js</code> following the TOPIC_TEMPLATE. See <code>CLAUDE.md</code> for Claude Code instructions.</div>
     </div>`;
   document.getElementById('topic-grid').innerHTML = topics.map(topicCard).join('') + addCard;
+}
+
+/* ══════════════════════════════════════════════════════════
+   NEW REQUEST FORM
+══════════════════════════════════════════════════════════ */
+function toggleNR() {
+  const w = document.getElementById('nr-wrap');
+  w.hidden = !w.hidden;
+  if (!w.hidden) { loadOb(); setTimeout(() => document.getElementById('nr-topic')?.focus(), 60); }
+  buildHome();
+}
+
+async function loadOb() {
+  if (obFiles !== null) return;
+  try {
+    const c = JSON.parse(localStorage.getItem(OBKEY) || 'null');
+    if (c?.files && (Date.now() - c.ts) < 216e5) { obFiles = c.files; return; }
+    const r = await fetch('https://api.github.com/repos/lucasmasunoacn/obsidian/git/trees/main?recursive=1');
+    if (!r.ok) throw 0;
+    const d = await r.json();
+    obFiles = (d.tree || []).map(t => t.path).filter(p => /^wiki\/.*\.md$/i.test(p));
+    localStorage.setItem(OBKEY, JSON.stringify({ ts: Date.now(), files: obFiles }));
+  } catch { obFiles = []; }
+}
+
+function nrSearch() {
+  const q = document.getElementById('nr-src').value.trim().toLowerCase();
+  const box = document.getElementById('nr-drop');
+  if (!obFiles?.length || !q) { box.classList.remove('show'); return; }
+  const m = obFiles.filter(p => p.toLowerCase().includes(q)).slice(0, 12);
+  box.innerHTML = m.length
+    ? m.map(p => `<div class="nr-item" data-path="${esc(p)}">${esc(p.replace(/^wiki\//, ''))}</div>`).join('')
+    : '<div class="nr-item" style="cursor:default;color:var(--m2)">No wiki pages match</div>';
+  box.classList.add('show');
+}
+
+function nrAdd(p) {
+  if (p && !nrSrcs.includes(p)) nrSrcs.push(p);
+  nrRenderChips();
+  document.getElementById('nr-src').value = '';
+  document.getElementById('nr-drop').classList.remove('show');
+}
+
+function nrRm(p) { nrSrcs = nrSrcs.filter(x => x !== p); nrRenderChips(); }
+
+function nrRenderChips() {
+  document.getElementById('nr-chips').innerHTML = nrSrcs.map(p =>
+    `<span class="nr-chip">${esc(p.split('/').pop().replace(/\.md$/, ''))}<button data-rm="${esc(p)}" title="Remove">✕</button></span>`
+  ).join('');
+}
+
+function nrSave() {
+  const topic = document.getElementById('nr-topic').value.trim();
+  if (!topic) { document.getElementById('nr-topic').focus(); return; }
+  const a = JSON.parse(localStorage.getItem(QKEY) || '[]');
+  a.push({ id: Math.random().toString(36).slice(2, 9), topic, sources: nrSrcs.slice(),
+           note: document.getElementById('nr-note').value.trim(), ts: new Date().toISOString() });
+  localStorage.setItem(QKEY, JSON.stringify(a));
+  document.getElementById('nr-topic').value = '';
+  document.getElementById('nr-note').value = '';
+  nrSrcs = []; nrRenderChips();
+  buildHome();
+  const btn = document.querySelector('#nr-wrap .btn-acc');
+  if (btn) { const t = btn.textContent; btn.textContent = '✓ Saved!'; setTimeout(() => btn.textContent = t, 1400); }
+  document.getElementById('nr-topic').focus();
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -562,29 +637,25 @@ function showResults() {
 }
 
 /* ══════════════════════════════════════════════════════════
-   TRANSLATE
-══════════════════════════════════════════════════════════ */
-function openTranslate(e) {
-  e.preventDefault();
-  const existing = document.getElementById('xlate-tip');
-  if (existing) { existing.remove(); return; }
-  const tip = document.createElement('div');
-  tip.id = 'xlate-tip';
-  tip.innerHTML = `
-    <button onclick="document.getElementById('xlate-tip').remove()"
-      style="float:right;background:none;border:none;cursor:pointer;color:var(--m);font-size:1.1rem;line-height:1">✕</button>
-    <strong>🌐 Translate this page</strong><br><br>
-    Use your <strong>browser's built-in translate</strong> — it preserves full quiz interactivity:<br><br>
-    🖥️ <strong>Desktop:</strong> Right-click anywhere on the page → "Translate to [language]"<br><br>
-    📱 <strong>Mobile:</strong> Tap the <strong>translate icon</strong> that appears in the address bar<br><br>
-    <small style="color:var(--m2)">Google Translate proxy blocks button clicks — use browser-native translate instead.</small>
-  `;
-  tip.style.cssText = 'position:fixed;top:58px;right:12px;background:var(--card);border:1px solid var(--brd);border-radius:12px;padding:16px;font-size:.82rem;max-width:290px;box-shadow:var(--sh-lg);z-index:300;line-height:1.6;color:var(--txt)';
-  document.body.appendChild(tip);
-  setTimeout(() => tip?.remove(), 10000);
-}
-
-/* ══════════════════════════════════════════════════════════
    INIT
 ══════════════════════════════════════════════════════════ */
 buildHome();
+
+document.getElementById('nr-drop').addEventListener('click', e => {
+  const it = e.target.closest('.nr-item'); if (it?.dataset.path) nrAdd(it.dataset.path);
+});
+document.getElementById('nr-chips').addEventListener('click', e => {
+  const b = e.target.closest('button[data-rm]'); if (b) nrRm(b.getAttribute('data-rm'));
+});
+document.getElementById('nr-src').addEventListener('input', nrSearch);
+document.getElementById('nr-src').addEventListener('focus', nrSearch);
+document.getElementById('nr-src').addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    let v = e.target.value.trim();
+    if (v) { if (!/^wiki\//.test(v)) v = 'wiki/' + v; nrAdd(v); }
+  }
+});
+document.addEventListener('click', e => {
+  if (!e.target.closest('.nr-srcpick')) document.getElementById('nr-drop').classList.remove('show');
+});

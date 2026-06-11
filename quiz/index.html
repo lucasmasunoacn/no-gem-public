@@ -13,7 +13,6 @@
 /* ── LAYOUT ───────────────────────────────────────────── */
 main{max-width:1020px;margin:0 auto;padding:28px 18px}
 .screen{display:none}.screen.active{display:block}
-#translate-btn{text-decoration:none}
 
 /* ── HOME SCREEN ──────────────────────────────────────── */
 .home-hero{text-align:center;padding:32px 0 24px}
@@ -232,6 +231,33 @@ main{max-width:1020px;margin:0 auto;padding:28px 18px}
 .ssub{color:var(--m);margin-bottom:20px;font-size:.84rem;max-width:360px;margin-left:auto;margin-right:auto}
 .btn-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
 
+/* ── NEW REQUEST FORM ─────────────────────────────────── */
+.nr-form{background:var(--card);border-radius:14px;padding:18px;box-shadow:var(--sh);
+  margin-bottom:18px;animation:riseIn .3s cubic-bezier(.22,1,.36,1)}
+.nr-form label{display:block;font-size:.72rem;color:var(--m);font-weight:700;margin:10px 0 4px}
+.nr-form label:first-child{margin-top:0}
+.nr-form input,.nr-form textarea{
+  width:100%;font-family:inherit;font-size:.84rem;color:var(--txt);
+  background:var(--surf);border:1px solid var(--div);border-radius:10px;
+  padding:9px 12px;outline:none;box-sizing:border-box
+}
+.nr-form input:focus,.nr-form textarea:focus{border-color:var(--acc)}
+.nr-form textarea{resize:vertical;min-height:52px;line-height:1.5}
+.nr-srcpick{position:relative}
+.nr-drop{position:absolute;top:calc(100% + 6px);left:0;right:0;z-index:60;
+  background:var(--bg);border-radius:12px;box-shadow:var(--sh-lg);
+  max-height:200px;overflow-y:auto;padding:6px;display:none}
+.nr-drop.show{display:block}
+.nr-item{padding:8px 10px;border-radius:8px;font-size:.76rem;
+  font-family:ui-monospace,Menlo,Consolas,monospace;color:var(--m);cursor:pointer}
+.nr-item:hover{color:var(--txt);background:var(--surf)}
+.nr-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.nr-chip{display:inline-flex;align-items:center;gap:6px;font-size:.72rem;font-weight:600;
+  color:var(--m);background:var(--surf);box-shadow:var(--sh-sm);
+  border-radius:99px;padding:5px 7px 5px 11px}
+.nr-chip button{border:none;background:none;color:var(--m2);cursor:pointer;font-size:.8rem;line-height:1;padding:0}
+.nr-chip button:hover{color:var(--red)}
+
 /* ── Fluid entrances ──────────────────────────────────── */
 .screen.active .qcard{animation:popIn .42s cubic-bezier(.22,1,.36,1)}
 .topic-card{animation:riseIn .5s cubic-bezier(.22,1,.36,1) backwards}
@@ -247,7 +273,6 @@ main{max-width:1020px;margin:0 auto;padding:28px 18px}
   <div class="logo">🧠 Second Brain <span>Quiz</span></div>
   <a class="hbtn" href="../vocab/" title="Vocabulary dictionary" aria-label="Vocabulary dictionary">📚</a>
   <a class="hbtn" href="requests.html" title="Learning requests" aria-label="Learning requests">📥</a>
-  <a class="hbtn" id="translate-btn" href="#" onclick="openTranslate(event)" title="Translate page" aria-label="Translate page">🌐</a>
   <button class="hbtn" id="theme-btn" onclick="toggleTheme()" title="Toggle light/dark" aria-label="Toggle light/dark">🌙</button>
 </header>
 
@@ -258,6 +283,21 @@ main{max-width:1020px;margin:0 auto;padding:28px 18px}
   <div class="home-hero">
     <h2>Learn from the Wiki</h2>
     <p>Slides with interactive calculators, then quiz yourself. Topics are driven by the <code>/wiki/</code> knowledge base.</p>
+  </div>
+  <div id="nr-wrap" hidden>
+    <div class="nr-form">
+      <label for="nr-topic">Topic *</label>
+      <input id="nr-topic" type="text" placeholder="e.g. Algorithmic Trading" autocomplete="off">
+      <label>Wiki source files</label>
+      <div class="nr-srcpick">
+        <input id="nr-src" type="text" placeholder="🔍 search obsidian wiki pages…" autocomplete="off">
+        <div class="nr-drop" id="nr-drop"></div>
+      </div>
+      <div class="nr-chips" id="nr-chips"></div>
+      <label for="nr-note">Notes (optional)</label>
+      <textarea id="nr-note" placeholder="e.g. focus on VWAP/TWAP, ~10 questions"></textarea>
+      <button class="btn btn-acc neu-btn" style="width:100%;margin-top:12px" onclick="nrSave()">+ Save quiz request</button>
+    </div>
   </div>
   <div class="topic-grid" id="topic-grid"></div>
 </div>
