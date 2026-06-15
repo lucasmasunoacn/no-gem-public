@@ -15,7 +15,8 @@ const WIKI_BASE = 'https://github.com/lucasmasunoacn/no-gem-wiki/blob/main/';
 
 /* ── Quiz API / auth ────────────────────────────────────── */
 const _QP = new URLSearchParams(window.location.search);
-const API_BASE = (_QP.get('api') || localStorage.getItem('nogem-api') || '').replace(/\/$/, '');
+const _DEFAULT_API = 'https://no-gem-792242079623.asia-northeast1.run.app';
+const API_BASE = (_QP.get('api') || localStorage.getItem('nogem-api') || _DEFAULT_API).replace(/\/$/, '');
 if (API_BASE) localStorage.setItem('nogem-api', API_BASE);
 
 // Handle ?quiz_token= redirect from OAuth callback
@@ -43,15 +44,26 @@ function _renderQuizUser() {
   if (!btn) return;
   const u = _quizUser();
   if (u) {
-    btn.innerHTML = (u.avatar ? `<img src="${u.avatar}&s=20" style="width:18px;height:18px;border-radius:50%;vertical-align:middle;margin-right:4px">` : '') + esc(u.name || u.sub);
-    btn.title = `Signed in as @${u.sub} — click to sign out`;
+    // Show round avatar only — name appears on hover via title
+    btn.innerHTML = u.avatar
+      ? `<img src="${u.avatar}&s=40" style="width:26px;height:26px;border-radius:50%;display:block">`
+      : `<span style="width:26px;height:26px;border-radius:50%;background:var(--acc);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff">${esc((u.name||u.sub||'?').slice(0,2).toUpperCase())}</span>`;
+    btn.title = `@${u.sub} — click to sign out`;
+    btn.style.padding = '0';
+    btn.style.width = '34px';
+    btn.style.height = '34px';
+    btn.style.borderRadius = '50%';
+    btn.style.overflow = 'hidden';
     btn.onclick = () => { localStorage.removeItem('quiz-jwt'); _renderQuizUser(); _syncLoad(); };
   } else {
-    btn.innerHTML = '↑ Sync';
-    btn.title = API_BASE ? 'Sign in with GitHub to sync progress' : 'Add ?api=<backend-url> to enable sync';
-    btn.onclick = API_BASE
-      ? () => { window.location.href = `${API_BASE}/auth/quiz-login?return=${encodeURIComponent(window.location.href)}`; }
-      : () => alert('Add ?api=<your-cloud-run-url> to the URL to enable sync.');
+    btn.innerHTML = 'Sign in';
+    btn.style.padding = '';
+    btn.style.width = '';
+    btn.style.height = '';
+    btn.style.borderRadius = '';
+    btn.style.overflow = '';
+    btn.title = 'Sign in with GitHub to sync progress';
+    btn.onclick = () => { window.location.href = `${API_BASE}/auth/quiz-login?return=${encodeURIComponent(window.location.href)}`; };
   }
 }
 

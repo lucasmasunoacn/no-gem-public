@@ -1525,13 +1525,12 @@ async function _initWikiIfNeeded() {
 
 function filterWikiPages(q) {
   _wikiQuery = (q || '').toLowerCase().trim();
-  const filtered = _wikiQuery
+  _renderWikiTree(_wikiQuery
     ? _wikiPages.filter(p =>
         p.title.toLowerCase().includes(_wikiQuery) ||
         (p.category || '').toLowerCase().includes(_wikiQuery) ||
         (p.tags || []).some(t => t.toLowerCase().includes(_wikiQuery)))
-    : _wikiPages;
-  _renderWikiTree(filtered);
+    : _wikiPages);
 }
 
 function _renderWikiTree(pages) {
@@ -1540,18 +1539,42 @@ function _renderWikiTree(pages) {
     treeEl.innerHTML = '<div class="docs-welcome" style="font-size:11px">No pages found.</div>';
     return;
   }
-  // Group by category
-  const groups = {};
-  for (const p of pages) {
-    const cat = p.category || 'General';
-    if (!groups[cat]) groups[cat] = [];
-    groups[cat].push(p);
+
+  if (_wikiQuery) {
+    // Search mode: flat list with category badge
+    treeEl.innerHTML = `<div class="wiki-count">${pages.length} result${pages.length===1?'':'s'}</div>` +
+      pages.map(p => `
+        <button class="wiki-flat-item" data-wiki-slug="${esc(p.slug)}" onclick="loadWikiPage(this,'${esc(p.slug)}','${esc(p.title)}')">
+          <span class="wiki-flat-title">${esc(p.title)}</span>
+          ${p.category ? `<span class="wiki-cat-badge">${esc(p.category)}</span>` : ''}
+        </button>`).join('');
+  } else {
+    // Browse mode: collapsible categories, show recent 10 first
+    const recent = pages.slice(0, 10);
+    const groups = {};
+    for (const p of pages) {
+      const cat = p.category || 'General';
+      if (!groups[cat]) groups[cat] = [];
+      groups[cat].push(p);
+    }
+    const catCount = Object.keys(groups).length;
+    treeEl.innerHTML =
+      `<div class="wiki-count">${pages.length} pages · ${catCount} categories</div>` +
+      `<div class="docs-section">
+        <div class="docs-section-label">Recent</div>
+        ${recent.map(p => `<button class="wiki-flat-item" data-wiki-slug="${esc(p.slug)}" onclick="loadWikiPage(this,'${esc(p.slug)}','${esc(p.title)}')">
+          <span class="wiki-flat-title">${esc(p.title)}</span>
+          ${p.category ? `<span class="wiki-cat-badge">${esc(p.category)}</span>` : ''}
+        </button>`).join('')}
+      </div>` +
+      Object.entries(groups).map(([cat, ps]) => `
+        <details class="wiki-cat-group">
+          <summary class="docs-section-label wiki-cat-summary">${esc(cat)} <span class="wiki-cat-count">${ps.length}</span></summary>
+          ${ps.map(p => `<button class="wiki-flat-item" data-wiki-slug="${esc(p.slug)}" onclick="loadWikiPage(this,'${esc(p.slug)}','${esc(p.title)}')">
+            <span class="wiki-flat-title">${esc(p.title)}</span>
+          </button>`).join('')}
+        </details>`).join('');
   }
-  treeEl.innerHTML = Object.entries(groups).map(([cat, ps]) => `
-    <div class="docs-section">
-      <div class="docs-section-label">${esc(cat)}</div>
-      ${ps.map(p => `<button class="docs-tree-item" data-wiki-slug="${esc(p.slug)}" onclick="loadWikiPage(this,'${esc(p.slug)}','${esc(p.title)}')">${esc(p.title)}</button>`).join('')}
-    </div>`).join('');
 }
 
 async function loadWikiPage(btn, slug, title) {
@@ -1567,13 +1590,18 @@ async function loadWikiPage(btn, slug, title) {
     const qs = (data.suggestedQuestions || []).map(q =>
       `<button class="wiki-q-btn" onclick="queueWikiFollowup('${esc(slug)}',this)" data-q="${esc(q)}" title="Queue as research task">${esc(q)}</button>`
     ).join('');
-    const ghLink = data.wikiUrl ? `<a class="wiki-open-btn" href="${esc(data.wikiUrl)}" target="_blank" rel="noopener">↗ Open on GitHub</a>` : '';
+    const ghLink = data.wikiUrl ? `<a class="wiki-open-btn" href="${esc(data.wikiUrl)}" target="_blank" rel="noopener">↗ GitHub</a>` : '';
+    const storeSlug = slug; const storeTitle = data.title || title; const storeContent = data.content || '';
     reader.innerHTML = `
       <div class="docs-content">
         <h1>${esc(data.title || title)}</h1>
-        ${tags ? `<div class="wiki-tags">${tags}</div>` : ''}
-        ${ghLink}
-        ${_markdownToHtml(data.content || '')}
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
+          ${tags ? `<div class="wiki-tags" style="margin:0">${tags}</div>` : ''}
+          ${ghLink}
+          <button class="wiki-open-btn" onclick="showWikiPrompt('quiz','${esc(storeSlug)}','${esc(storeTitle)}')">✏️ Quiz prompt</button>
+          <button class="wiki-open-btn" onclick="showWikiPrompt('vocab','${esc(storeSlug)}','${esc(storeTitle)}')">📖 Vocab prompt</button>
+        </div>
+        ${_markdownToHtml(storeContent)}
         ${qs ? `<div style="margin-top:20px;border-top:1px solid var(--div);padding-top:12px"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--m2);margin-bottom:6px">Suggested follow-ups</div>${qs}</div>` : ''}
       </div>`;
     if (window.mermaid) {
@@ -1597,6 +1625,69 @@ async function queueWikiFollowup(pageSlug, btn) {
     if (!res.ok) throw new Error(res.status);
     btn.textContent = '✓ queued';
   } catch { btn.disabled = false; btn.textContent = q; }
+}
+
+function showWikiPrompt(type, slug, title) {
+  const isQuiz = type === 'quiz';
+  const prompt = isQuiz
+    ? `You are an expert educator. Using the wiki page titled "${title}" (slug: ${slug}), create a quiz topic JSON for the Gem Brain quiz app.
+
+The format must match this schema:
+{
+  "id": "${slug}-quiz",
+  "title": "${title}",
+  "emoji": "💎",
+  "slides": [
+    { "title": "...", "bullets": ["...", "..."], "note": "..." }
+  ],
+  "quiz": [
+    { "q": "Question?", "options": ["A", "B", "C", "D"], "answer": 0, "explanation": "..." }
+  ]
+}
+
+Rules:
+- 5–8 slides covering key concepts from the page
+- 8–12 quiz questions, multiple choice, 4 options each
+- answer is the index (0-3) of the correct option
+- explanations should reference the source material
+- Output only valid JSON, no markdown fencing`
+    : `You are an expert educator. Using the wiki page titled "${title}" (slug: ${slug}), create vocabulary flashcard entries for the Gem Brain vocab app.
+
+The format must match this schema (array of entries):
+[
+  {
+    "term": "Term or concept",
+    "reading": "pronunciation or abbreviation (optional)",
+    "definition": "Clear 1-2 sentence definition",
+    "example": "Example sentence or use case",
+    "tags": ["tag1", "tag2"]
+  }
+]
+
+Rules:
+- Extract 10–20 key terms, acronyms, or concepts from the page
+- Definitions should be precise and self-contained
+- Tags should reflect the category/domain (e.g. "finance", "AI", "market")
+- Output only valid JSON array, no markdown fencing`;
+
+  const existingModal = document.getElementById('wiki-prompt-modal');
+  if (existingModal) existingModal.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'wiki-prompt-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)';
+  modal.innerHTML = `
+    <div style="background:var(--bg);box-shadow:var(--sh-lg);border-radius:16px;width:min(640px,95vw);max-height:85vh;display:flex;flex-direction:column;padding:20px;gap:12px;position:relative">
+      <div style="font-weight:700;font-size:14px;color:var(--txt)">${isQuiz ? '✏️ Quiz prompt' : '📖 Vocab prompt'} — ${esc(title)}</div>
+      <div style="font-size:11px;color:var(--m)">Copy this prompt and run it with Gemini CLI or Claude Code to generate content.</div>
+      <textarea id="wiki-prompt-text" style="flex:1;min-height:280px;background:var(--bg);box-shadow:var(--sh-in);border:none;border-radius:10px;padding:12px;font-size:11px;font-family:'SF Mono','Monaco',monospace;color:var(--txt);resize:vertical;line-height:1.5" readonly>${prompt}</textarea>
+      <div style="display:flex;gap:8px">
+        <button class="save-btn" onclick="navigator.clipboard.writeText(document.getElementById('wiki-prompt-text').value).then(()=>{this.textContent='✓ Copied';setTimeout(()=>{this.textContent='Copy'},1500)})">Copy</button>
+        <button class="refresh-btn" onclick="document.getElementById('wiki-prompt-modal').remove()">Close</button>
+      </div>
+    </div>`;
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+  document.body.appendChild(modal);
 }
 
 function _markdownToHtml(md) {
