@@ -7,7 +7,11 @@
 
 /* ── Config from URL ─────────────────────────────────────── */
 const _params = new URLSearchParams(window.location.search);
-const API_BASE = (_params.get('api') || '').replace(/\/$/, '');
+// Persist api= param so the URL is bookmarkable without query strings.
+// Default to the production Cloud Run URL so no manual setup is needed.
+const _DEFAULT_API = 'https://no-gem-792242079623.asia-northeast1.run.app';
+const API_BASE = (_params.get('api') || localStorage.getItem('nogem-api') || _DEFAULT_API).replace(/\/$/, '');
+if (_params.get('api')) localStorage.setItem('nogem-api', _params.get('api')); // persist override
 
 // If /auth/callback redirected here with ?token=, store it and clean the URL.
 (function _handleAuthReturn() {
@@ -148,8 +152,8 @@ async function loadDashboard() {
         <div class="dash-error-title">Failed to load dashboard</div>
         <div class="dash-error-msg">${esc(err.message)}</div>
         <div class="dash-error-hint">
-          Add <code>?api=https://your-cloud-run-url&key=SECRET</code> to the URL,
-          or run the backend locally at the same origin.
+          Check that the backend is reachable at <code>${API_BASE}</code>.<br>
+          To use a different backend, add <code>?api=https://your-cloud-run-url</code> to the URL.
         </div>
         <button class="save-btn" style="margin-top:14px" onclick="loadDashboard()">Retry</button>
       </div>`;
@@ -217,6 +221,7 @@ function navTo(pageId) {
   document.querySelectorAll('.mob-tab[data-page]').forEach(b => b.classList.toggle('active', b.dataset.page === pageId));
   if (pageId === 'analytics') _initCharts();
   if (pageId === 'docs') _initDocsIfNeeded();
+  if (pageId === 'wiki') _initWikiIfNeeded();
   if (pageId === 'settings') { _loadContextSettings(); }
   if (pageId === 'channels') { _initChannelsPage(); _loadContextSettings(); }
   if (pageId === 'repos') _initReposPage();
@@ -379,7 +384,7 @@ function _renderAgentGrid() {
         <div class="acard-name">${esc(reg.name)}</div>
         <div class="acard-desc">${esc(reg.desc || '')}</div>
         <div class="acard-chips" style="margin-top:4px">
-          ${(status === 'running' || status === 'failed') ? `<span class="chip chip-${status}">${status}</span>` : ''}
+          <span class="chip chip-${status}">${status}</span>
           <span class="cat-chip">${esc(reg.category || '')}</span>
         </div>
         <div class="acard-foot" style="margin-top:6px">
@@ -988,23 +993,7 @@ async function saveAgentChannel(agentId, channelKey) {
    LOCATION PILL + MODAL
 ══════════════════════════════════════════════════════════════ */
 function _renderLocationPill() {
-  const lp = LOCATION_PROFILE;
-  const pill = document.getElementById('location-pill');
-  if (pill) {
-    const label = lp?.city ? `&#128205; ${lp.city}${lp.countryCode ? ', ' + lp.countryCode : ''}` : '&#128205; —';
-    pill.textContent = label;
-  }
-  const det = document.getElementById('location-detail');
-  if (det && lp) {
-    det.innerHTML = `<b>${esc(lp.city||'?')}, ${esc(lp.country||'?')}</b><br>
-      ${lp.timezone ? esc(lp.timezone) + '<br>' : ''}
-      ${lp.confidence ? 'Confidence: ' + esc(lp.confidence) + '<br>' : ''}
-      ${lp.userOverride ? '<span style="color:var(--grn)">Manual override</span><br>' : ''}
-      ${lp.reasoning ? '<span style="font-size:10px;color:var(--m)">' + esc(lp.reasoning.substring(0,100)) + '…</span>' : ''}`;
-    const ci = document.getElementById('loc-city-input'), coi = document.getElementById('loc-country-input');
-    if (ci) ci.value = lp.city || ''; if (coi) coi.value = lp.countryCode || '';
-  }
-  // Also sync Settings section
+  // Location is now Settings-only — delegate directly.
   _renderSettingsLocation();
 }
 
@@ -1027,7 +1016,7 @@ function clearLocationOverride() {
       body: JSON.stringify({ clearOverride:true })
     }).catch(()=>{});
     loadDashboard();
-  }, document.getElementById('location-pill'));
+  }, document.getElementById('settings-loc-city'));
 }
 
 function closeLocOverlay(e) {
@@ -1511,6 +1500,103 @@ async function loadDoc(btn, path, label) {
   } catch (e) {
     reader.innerHTML = `<div class="docs-welcome" style="color:var(--error)">Failed to load: ${esc(e.message)}</div>`;
   }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   WIKI VIEWER
+══════════════════════════════════════════════════════════════ */
+let _wikiInited = false, _wikiPages = [], _wikiQuery = '';
+
+async function _initWikiIfNeeded() {
+  if (_wikiInited || !API_BASE) return;
+  _wikiInited = true;
+  const treeEl = document.getElementById('wiki-tree');
+  if (treeEl) treeEl.innerHTML = '<div class="docs-welcome" style="font-size:11px">Loading…</div>';
+  try {
+    const res = await fetch(apiUrl('/api/wiki/pages'), { headers: _authHeaders() });
+    if (res.status === 401) { _handleUnauthorized(); return; }
+    const data = await res.json();
+    _wikiPages = data.pages || [];
+    _renderWikiTree(_wikiPages);
+  } catch (e) {
+    if (treeEl) treeEl.innerHTML = `<div class="docs-welcome" style="font-size:11px;color:var(--error)">Failed to load wiki</div>`;
+  }
+}
+
+function filterWikiPages(q) {
+  _wikiQuery = (q || '').toLowerCase().trim();
+  const filtered = _wikiQuery
+    ? _wikiPages.filter(p =>
+        p.title.toLowerCase().includes(_wikiQuery) ||
+        (p.category || '').toLowerCase().includes(_wikiQuery) ||
+        (p.tags || []).some(t => t.toLowerCase().includes(_wikiQuery)))
+    : _wikiPages;
+  _renderWikiTree(filtered);
+}
+
+function _renderWikiTree(pages) {
+  const treeEl = document.getElementById('wiki-tree'); if (!treeEl) return;
+  if (!pages.length) {
+    treeEl.innerHTML = '<div class="docs-welcome" style="font-size:11px">No pages found.</div>';
+    return;
+  }
+  // Group by category
+  const groups = {};
+  for (const p of pages) {
+    const cat = p.category || 'General';
+    if (!groups[cat]) groups[cat] = [];
+    groups[cat].push(p);
+  }
+  treeEl.innerHTML = Object.entries(groups).map(([cat, ps]) => `
+    <div class="docs-section">
+      <div class="docs-section-label">${esc(cat)}</div>
+      ${ps.map(p => `<button class="docs-tree-item" data-wiki-slug="${esc(p.slug)}" onclick="loadWikiPage(this,'${esc(p.slug)}','${esc(p.title)}')">${esc(p.title)}</button>`).join('')}
+    </div>`).join('');
+}
+
+async function loadWikiPage(btn, slug, title) {
+  if (!slug) return;
+  document.querySelectorAll('#wiki-tree .docs-tree-item').forEach(b => b.classList.toggle('active', b === btn));
+  const reader = document.getElementById('wiki-reader');
+  reader.innerHTML = '<div class="docs-loading">Loading…</div>';
+  try {
+    const res = await fetch(apiUrl(`/api/wiki/pages/${encodeURIComponent(slug)}`), { headers: _authHeaders() });
+    if (!res.ok) throw new Error(res.status);
+    const data = await res.json();
+    const tags = (data.tags || []).map(t => `<span class="wiki-tag">${esc(t)}</span>`).join('');
+    const qs = (data.suggestedQuestions || []).map(q =>
+      `<button class="wiki-q-btn" onclick="queueWikiFollowup('${esc(slug)}',this)" data-q="${esc(q)}" title="Queue as research task">${esc(q)}</button>`
+    ).join('');
+    const ghLink = data.wikiUrl ? `<a class="wiki-open-btn" href="${esc(data.wikiUrl)}" target="_blank" rel="noopener">↗ Open on GitHub</a>` : '';
+    reader.innerHTML = `
+      <div class="docs-content">
+        <h1>${esc(data.title || title)}</h1>
+        ${tags ? `<div class="wiki-tags">${tags}</div>` : ''}
+        ${ghLink}
+        ${_markdownToHtml(data.content || '')}
+        ${qs ? `<div style="margin-top:20px;border-top:1px solid var(--div);padding-top:12px"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--m2);margin-bottom:6px">Suggested follow-ups</div>${qs}</div>` : ''}
+      </div>`;
+    if (window.mermaid) {
+      const nodes = reader.querySelectorAll('.mermaid');
+      if (nodes.length) mermaid.run({ nodes }).catch(() => {});
+    }
+  } catch (e) {
+    reader.innerHTML = `<div class="docs-welcome" style="color:var(--error)">Failed to load: ${esc(e.message)}</div>`;
+  }
+}
+
+async function queueWikiFollowup(pageSlug, btn) {
+  const q = btn.dataset.q;
+  if (!q) return;
+  btn.disabled = true; btn.textContent = '…queuing';
+  try {
+    const res = await fetch(apiUrl('/api/wiki/followup'), {
+      method: 'POST', headers: { ..._authHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pageSlug, question: q, mode: 'queue' }),
+    });
+    if (!res.ok) throw new Error(res.status);
+    btn.textContent = '✓ queued';
+  } catch { btn.disabled = false; btn.textContent = q; }
 }
 
 function _markdownToHtml(md) {

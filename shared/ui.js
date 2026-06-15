@@ -10,8 +10,7 @@ const themeBtn = document.getElementById('theme-btn');
 
 (function initTheme() {
   const stored = localStorage.getItem('nogem-theme');
-  const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  const t = stored || (systemDark ? 'dark' : 'light');
+  const t = stored || 'light';
   root.setAttribute('data-theme', t);
   if (themeBtn) themeBtn.textContent = t === 'dark' ? '☀️' : '🌙';
 })();

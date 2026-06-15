@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>no-gem dashboard</title>
+<title>gem dash 💎</title>
 <link rel="stylesheet" href="../shared/neu.css">
 <link rel="stylesheet" href="dashboard.css">
 </head>
@@ -13,7 +13,7 @@
      FLOATING HEADER
 ════════════════════════════════════════════════ -->
 <header>
-  <span class="logo">no<span>gem</span></span>
+  <span class="logo"><span class="logo-gem">💎</span> gem<span>dash</span></span>
 
   <nav class="nav-pills" role="tablist">
     <button class="nav-pill active" data-page="overview" role="tab">Overview</button>
@@ -27,39 +27,19 @@
     <div class="ndrop" id="more-nav-drop">
       <button class="nav-pill" onclick="toggleDrop('more-nav-drop')" title="More pages" aria-label="More">⋯</button>
       <div class="ndrop-panel" id="more-nav-panel">
-        <button class="ndrop-opt" onclick="navTo('channels');toggleDrop('more-nav-drop')">💬 Channels</button>
-        <button class="ndrop-opt" onclick="navTo('repos');toggleDrop('more-nav-drop')">📦 Repos</button>
+        <button class="ndrop-opt" onclick="navTo('wiki');toggleDrop('more-nav-drop')"><i class="ni ni-wiki" aria-hidden="true"></i> Wiki</button>
+        <button class="ndrop-opt" onclick="navTo('channels');toggleDrop('more-nav-drop')"><i class="ni ni-channels" aria-hidden="true"></i> Channels</button>
+        <button class="ndrop-opt" onclick="navTo('repos');toggleDrop('more-nav-drop')"><i class="ni ni-repos" aria-hidden="true"></i> Repos</button>
         <hr class="ndrop-sep">
-        <button class="ndrop-opt" onclick="navTo('analytics');toggleDrop('more-nav-drop')">📊 Analytics</button>
-        <button class="ndrop-opt" onclick="navTo('knowledge');toggleDrop('more-nav-drop')">📚 Sources</button>
-        <button class="ndrop-opt" onclick="navTo('settings');toggleDrop('more-nav-drop')">⚙️ Settings</button>
+        <button class="ndrop-opt" onclick="navTo('analytics');toggleDrop('more-nav-drop')"><i class="ni ni-analytics" aria-hidden="true"></i> Analytics</button>
+        <button class="ndrop-opt" onclick="navTo('knowledge');toggleDrop('more-nav-drop')"><i class="ni ni-sources" aria-hidden="true"></i> Sources</button>
+        <button class="ndrop-opt" onclick="navTo('settings');toggleDrop('more-nav-drop')"><i class="ni ni-settings" aria-hidden="true"></i> Settings</button>
       </div>
     </div>
   </nav>
 
   <div class="header-controls">
     <span id="cost-badge" class="cost-badge"></span>
-    <div class="ndrop" id="location-drop">
-      <button class="hbtn pill" id="location-pill" onclick="toggleDrop('location-drop')">📍 —</button>
-      <div class="ndrop-panel" id="location-panel">
-        <div style="padding:10px 12px 6px;font-size:11px;font-weight:700;color:var(--txt)">Location</div>
-        <div id="location-detail" style="padding:4px 12px 8px;font-size:11px;color:var(--m)">Loading…</div>
-        <hr class="ndrop-sep">
-        <div style="padding:6px 8px">
-          <input class="form-input" id="loc-city-input" placeholder="City override" style="font-size:11px;margin-bottom:6px">
-          <input class="form-input" id="loc-country-input" placeholder="Country code (e.g. JP)" style="font-size:11px;margin-bottom:6px">
-          <button class="save-btn" style="width:100%" onclick="saveLocationOverride()">Save override</button>
-          <button class="refresh-btn" style="width:100%;margin-top:4px" onclick="clearLocationOverride()">Clear override</button>
-        </div>
-      </div>
-    </div>
-    <div class="ndrop" id="model-drop">
-      <button class="hbtn pill" id="model-btn" onclick="toggleDrop('model-drop')">⚡ —</button>
-      <div class="ndrop-panel" id="model-panel">
-        <div style="padding:8px 12px 4px;font-size:11px;font-weight:700;color:var(--txt)">Force Flash</div>
-        <div id="flash-list" style="padding:0 8px 8px"></div>
-      </div>
-    </div>
     <div class="ndrop" id="user-drop">
       <button class="hbtn pill user-pill-btn" id="user-pill" onclick="toggleDrop('user-drop')" title="Account" style="gap:5px">
         <img id="user-avatar" src="" width="20" height="20" style="border-radius:50%;display:none">
@@ -115,7 +95,6 @@
         <option value="balanced" selected>Balanced</option>
         <option value="aggressive">Aggressive</option>
       </select>
-      <button class="flash-toggle inactive" id="flash-global-btn" onclick="toggleFlashGlobal()">⚡ Flash: off</button>
       <span id="day-cost-label" class="cs-note"></span>
     </div>
 
@@ -177,6 +156,20 @@
       <div class="docs-tree-panel" id="docs-tree"></div>
       <div class="docs-reader" id="docs-reader">
         <div class="docs-welcome">Select a document from the tree</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── WIKI VIEWER ──────────────────────────── -->
+  <section class="page" id="page-wiki" data-mob-panel="wiki">
+    <div class="page-hd">
+      <div class="page-title">Wiki</div>
+      <input class="wiki-search-input" id="wiki-search" type="text" placeholder="Search pages…" oninput="filterWikiPages(this.value)" />
+    </div>
+    <div class="docs-layout">
+      <div class="docs-tree-panel" id="wiki-tree"></div>
+      <div class="docs-reader" id="wiki-reader">
+        <div class="docs-welcome">Select a page from the wiki</div>
       </div>
     </div>
   </section>
@@ -577,25 +570,25 @@
 ════════════════════════════════════════════════ -->
 <nav class="mob-tab-bar" role="tablist">
   <button class="mob-tab active" data-page="overview" onclick="navTo('overview')">
-    <span class="mob-tab-icon">🤖</span>
+    <i class="ni ni-agents" aria-hidden="true"></i>
     <span>Agents</span>
   </button>
   <button class="mob-tab" data-page="tasks" onclick="navTo('tasks')">
-    <span class="mob-tab-icon">📋</span>
+    <i class="ni ni-tasks" aria-hidden="true"></i>
     <span>Tasks</span>
     <span id="mob-tasks-badge" class="mob-tab-badge" style="display:none"></span>
   </button>
   <button class="mob-tab" data-page="inbox" onclick="navTo('inbox')">
-    <span class="mob-tab-icon">🚧</span>
+    <i class="ni ni-inbox" aria-hidden="true"></i>
     <span>Inbox</span>
     <span id="mob-inbox-badge" class="mob-tab-badge warn" style="display:none"></span>
   </button>
   <button class="mob-tab" data-page="docs" onclick="navTo('docs')">
-    <span class="mob-tab-icon">📄</span>
+    <i class="ni ni-docs" aria-hidden="true"></i>
     <span>Docs</span>
   </button>
   <button class="mob-tab" data-page="more" onclick="openMoreSheet()">
-    <span class="mob-tab-icon">⋯</span>
+    <i class="ni ni-more" aria-hidden="true"></i>
     <span>More</span>
   </button>
 </nav>
@@ -611,20 +604,21 @@
     </div>
 
     <!-- Primary secondary pages -->
-    <button class="mob-more-opt" onclick="navTo('channels');closeMoreSheet()">💬 Channels</button>
-    <button class="mob-more-opt" onclick="navTo('repos');closeMoreSheet()">📦 Repos</button>
+    <button class="mob-more-opt" onclick="navTo('wiki');closeMoreSheet()"><i class="ni ni-wiki" aria-hidden="true"></i> Wiki</button>
+    <button class="mob-more-opt" onclick="navTo('channels');closeMoreSheet()"><i class="ni ni-channels" aria-hidden="true"></i> Channels</button>
+    <button class="mob-more-opt" onclick="navTo('repos');closeMoreSheet()"><i class="ni ni-repos" aria-hidden="true"></i> Repos</button>
 
     <div class="mob-more-sep"></div>
 
     <!-- Less-frequent pages -->
-    <button class="mob-more-opt" onclick="navTo('analytics');closeMoreSheet()">📊 Analytics</button>
-    <button class="mob-more-opt" onclick="navTo('knowledge');closeMoreSheet()">📚 Sources</button>
-    <button class="mob-more-opt" onclick="navTo('settings');closeMoreSheet()">⚙️ Settings</button>
+    <button class="mob-more-opt" onclick="navTo('analytics');closeMoreSheet()"><i class="ni ni-analytics" aria-hidden="true"></i> Analytics</button>
+    <button class="mob-more-opt" onclick="navTo('knowledge');closeMoreSheet()"><i class="ni ni-sources" aria-hidden="true"></i> Sources</button>
+    <button class="mob-more-opt" onclick="navTo('settings');closeMoreSheet()"><i class="ni ni-settings" aria-hidden="true"></i> Settings</button>
 
     <div class="mob-more-sep"></div>
 
     <button class="mob-more-opt" onclick="loadDashboard();closeMoreSheet()">↺ Refresh</button>
-    <button class="mob-more-opt" onclick="toggleTheme();closeMoreSheet()">🌙 Toggle theme</button>
+    <button class="mob-more-opt" onclick="toggleTheme();closeMoreSheet()"><i class="ni ni-theme" aria-hidden="true"></i> Theme</button>
   </div>
 </div>
 

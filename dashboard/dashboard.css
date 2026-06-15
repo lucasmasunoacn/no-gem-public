@@ -30,8 +30,42 @@ body { display:flex; flex-direction:column; height:100% }
 
 /* ── FLOATING HEADER (extends neu.css header) */
 header{margin:12px;padding:10px 16px}
-.logo{font-size:1rem;font-weight:800;color:var(--acc);white-space:nowrap}
-.logo span{color:var(--txt);font-weight:400;font-size:.8rem;margin-left:6px}
+.logo{font-size:1rem;font-weight:800;color:var(--acc);white-space:nowrap;display:flex;align-items:center;gap:6px}
+.logo span{color:var(--txt);font-weight:400;font-size:.8rem;margin-left:2px}
+.logo-gem{font-style:normal;font-size:1rem;filter:drop-shadow(0 1px 2px rgba(0,0,0,.12))}
+
+/* ═══════════════════════════════════════════════════════════
+   NEUMORPHIC ICON SYSTEM (.ni)
+   Embossed icon chips — replace emoji across nav + menus.
+   Active state handled by parent (.mob-tab.active .ni, .ndrop-opt:hover .ni).
+══════════════════════════════════════════════════════════════ */
+.ni{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:28px;height:28px;border-radius:9px;
+  background:var(--bg);box-shadow:var(--sh-sm);
+  font-style:normal;font-weight:800;font-size:11px;
+  color:var(--m);letter-spacing:-.5px;flex-shrink:0;
+  transition:box-shadow .15s,color .15s;
+  font-family:'SF Mono','Monaco','Courier New',monospace;
+  user-select:none;
+}
+/* Pressed/active state when parent is active */
+.mob-tab.active .ni,.ndrop-opt:hover .ni,.mob-more-opt:hover .ni{
+  box-shadow:var(--sh-press);color:var(--acc);
+}
+/* Icon glyphs via pseudo-element text */
+.ni-agents::before  { content: 'AI'; font-size:9px; letter-spacing:-.3px; }
+.ni-tasks::before   { content: '✓'; font-size:14px; font-weight:900; }
+.ni-inbox::before   { content: '!'; font-size:15px; font-weight:900; }
+.ni-docs::before    { content: '≡'; font-size:16px; font-weight:400; }
+.ni-wiki::before    { content: 'W'; font-size:12px; }
+.ni-more::before    { content: '···'; font-size:10px; letter-spacing:1px; }
+.ni-channels::before{ content: '#'; font-size:14px; }
+.ni-repos::before   { content: '{}'; font-size:10px; letter-spacing:-.5px; }
+.ni-analytics::before{ content: '↗'; font-size:13px; font-weight:400; }
+.ni-sources::before { content: '⊕'; font-size:13px; font-weight:400; }
+.ni-settings::before{ content: '⚙'; font-size:13px; font-weight:400; }
+.ni-theme::before   { content: '◑'; font-size:13px; font-weight:400; }
 
 /* Main nav pills */
 .nav-pills{display:flex;gap:6px;flex:1;justify-content:center}
@@ -89,7 +123,9 @@ header{margin:12px;padding:10px 16px}
 }
 .mob-tab:active{background:var(--accent-bg)}
 .mob-tab.active{color:var(--acc)}
-.mob-tab-icon{font-size:20px;line-height:1}
+/* .mob-tab-icon retired — replaced by .ni neumorphic chip */
+.mob-tab .ni{width:32px;height:32px;border-radius:10px;font-size:12px}
+.mob-tab.active .ni{box-shadow:var(--sh-press);color:var(--acc)}
 .mob-tab-badge{
   position:absolute;top:4px;right:50%;
   transform:translateX(calc(50% + 9px));
@@ -668,6 +704,31 @@ header{margin:12px;padding:10px 16px}
 .docs-content .mermaid svg{max-width:100%;height:auto}
 
 /* ══════════════════════════════════════════════════════════════
+   WIKI VIEWER
+══════════════════════════════════════════════════════════════ */
+.wiki-search-input{
+  background:var(--bg);box-shadow:var(--sh-in);border:none;border-radius:20px;
+  padding:6px 14px;font-size:12px;color:var(--txt);font-family:inherit;
+  width:180px;transition:box-shadow .15s;outline:none;
+}
+.wiki-search-input:focus{box-shadow:var(--sh-in),0 0 0 2px color-mix(in srgb,var(--acc) 30%,transparent)}
+.wiki-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.wiki-tag{font-size:9px;padding:2px 7px;border-radius:99px;background:color-mix(in srgb,var(--acc) 14%,transparent);color:var(--acc);cursor:pointer}
+.wiki-tag:hover{background:color-mix(in srgb,var(--acc) 24%,transparent)}
+.wiki-q-btn{
+  display:inline-block;margin:3px 2px;padding:4px 10px;border-radius:20px;font-size:11px;
+  background:var(--bg);box-shadow:var(--sh-sm);border:none;color:var(--m);cursor:pointer;
+  font-family:inherit;transition:box-shadow .15s,color .15s;
+}
+.wiki-q-btn:hover{box-shadow:var(--sh);color:var(--acc)}
+.wiki-open-btn{
+  display:inline-flex;align-items:center;gap:4px;margin-top:12px;padding:6px 14px;
+  border-radius:20px;font-size:12px;background:var(--bg);box-shadow:var(--sh-sm);
+  border:none;color:var(--m);cursor:pointer;font-family:inherit;transition:box-shadow .15s,color .15s;text-decoration:none;
+}
+.wiki-open-btn:hover{box-shadow:var(--sh);color:var(--acc)}
+
+/* ══════════════════════════════════════════════════════════════
    SETTINGS SIDEBAR LAYOUT
 ══════════════════════════════════════════════════════════════ */
 .settings-layout{display:grid;grid-template-columns:168px 1fr;gap:14px;align-items:start}
@@ -767,6 +828,7 @@ header{margin:12px;padding:10px 16px}
   .docs-layout{grid-template-columns:1fr;min-height:unset}
   .docs-tree-panel{max-height:160px;position:static;padding:10px 6px}
   .docs-reader{max-height:none;min-height:50vh}
+  .wiki-search-input{width:100%;box-sizing:border-box}
   /* Settings sidebar → horizontal scrollable pills on mobile */
   .settings-layout{grid-template-columns:1fr}
   .settings-nav{
