@@ -727,6 +727,23 @@ header{margin:12px;padding:10px 16px}
   border:none;color:var(--m);cursor:pointer;font-family:inherit;transition:box-shadow .15s,color .15s;text-decoration:none;
 }
 .wiki-open-btn:hover{box-shadow:var(--sh);color:var(--acc)}
+/* Wiki FAB + multi-select */
+.wiki-fab{
+  position:sticky;bottom:12px;float:right;width:36px;height:36px;border-radius:50%;
+  background:var(--acc);color:#fff;font-size:20px;font-weight:700;border:none;cursor:pointer;
+  box-shadow:0 4px 14px color-mix(in srgb,var(--acc) 40%,transparent);
+  display:flex;align-items:center;justify-content:center;
+  transition:box-shadow .15s,transform .15s;z-index:10;clear:both;margin-top:8px;
+}
+.wiki-fab:hover{box-shadow:0 6px 20px color-mix(in srgb,var(--acc) 55%,transparent);transform:scale(1.08)}
+.wiki-select-bar{
+  position:sticky;bottom:0;display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  padding:10px 12px;background:var(--bg);box-shadow:0 -2px 12px color-mix(in srgb,var(--m) 12%,transparent);
+  border-top:1px solid var(--div);border-radius:0 0 14px 14px;z-index:20;
+  font-size:11px;color:var(--m);
+}
+.wiki-sel-cb{width:14px;height:14px;cursor:pointer;flex-shrink:0;accent-color:var(--acc)}
+.wiki-sel-active{background:color-mix(in srgb,var(--acc) 8%,var(--bg))!important;color:var(--acc)!important}
 .wiki-count{font-size:10px;color:var(--m);padding:2px 4px 8px;opacity:.7}
 .wiki-flat-item{
   display:flex;align-items:center;justify-content:space-between;gap:6px;

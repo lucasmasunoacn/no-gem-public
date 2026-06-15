@@ -44,8 +44,15 @@ function _renderUserPill() {
   const detailL   = document.getElementById('user-detail-login');
   if (!nameEl) return;
   if (!p) { nameEl.textContent = '—'; return; }
-  if (avatarEl && p.avatar) { avatarEl.src = `${p.avatar}&s=32`; avatarEl.style.display = ''; }
-  nameEl.textContent = p.name || p.sub || '—';
+  if (avatarEl && p.avatar) {
+    avatarEl.src = `${p.avatar}&s=60`;
+    avatarEl.style.display = '';
+    nameEl.style.display = 'none';
+    const pillBtn = document.getElementById('user-pill');
+    if (pillBtn) { pillBtn.style.padding = '3px'; pillBtn.style.borderRadius = '50%'; pillBtn.style.width = '36px'; pillBtn.style.height = '36px'; }
+  } else {
+    nameEl.textContent = p.name || p.sub || '—';
+  }
   if (detailN) detailN.textContent = p.name || p.sub || '—';
   if (detailL) detailL.textContent = `@${p.sub || ''}`;
 }
@@ -1505,7 +1512,9 @@ async function loadDoc(btn, path, label) {
 /* ═══════════════════════════════════════════════════════════
    WIKI VIEWER
 ══════════════════════════════════════════════════════════════ */
-let _wikiInited = false, _wikiPages = [], _wikiQuery = '';
+let _wikiInited = false, _wikiPages = [], _wikiFiles = [], _wikiQuery = '';
+let _wikiTab = 'pages'; // 'pages' | 'files'
+let _wikiSelectMode = false, _wikiSelected = new Set();
 
 async function _initWikiIfNeeded() {
   if (_wikiInited || !API_BASE) return;
@@ -1523,57 +1532,162 @@ async function _initWikiIfNeeded() {
   }
 }
 
-function filterWikiPages(q) {
+async function _loadWikiFiles() {
+  const treeEl = document.getElementById('wiki-tree'); if (!treeEl) return;
+  if (_wikiFiles.length) { _renderWikiFiles(_wikiFiles); return; }
+  treeEl.innerHTML = '<div class="docs-welcome" style="font-size:11px">Loading files…</div>';
+  try {
+    const res = await fetch(apiUrl('/api/wiki/files'), { headers: _authHeaders() });
+    if (!res.ok) throw new Error(res.status);
+    const data = await res.json();
+    _wikiFiles = data.files || [];
+    _renderWikiFiles(_wikiFiles);
+  } catch (e) {
+    treeEl.innerHTML = `<div class="docs-welcome" style="font-size:11px;color:var(--error)">Failed to load files: ${esc(e.message)}</div>`;
+  }
+}
+
+function setWikiTab(tab) {
+  _wikiTab = tab;
+  _wikiQuery = '';
+  const searchEl = document.getElementById('wiki-search');
+  if (searchEl) searchEl.value = '';
+  document.getElementById('wiki-tab-pages')?.classList.toggle('active', tab === 'pages');
+  document.getElementById('wiki-tab-files')?.classList.toggle('active', tab === 'files');
+  if (tab === 'pages') _renderWikiTree(_wikiPages);
+  else _loadWikiFiles();
+}
+
+function _wikiSearchInput(q) {
   _wikiQuery = (q || '').toLowerCase().trim();
-  _renderWikiTree(_wikiQuery
-    ? _wikiPages.filter(p =>
-        p.title.toLowerCase().includes(_wikiQuery) ||
-        (p.category || '').toLowerCase().includes(_wikiQuery) ||
-        (p.tags || []).some(t => t.toLowerCase().includes(_wikiQuery)))
-    : _wikiPages);
+  if (_wikiTab === 'pages') {
+    _renderWikiTree(_wikiQuery
+      ? _wikiPages.filter(p =>
+          p.title.toLowerCase().includes(_wikiQuery) ||
+          (p.category || '').toLowerCase().includes(_wikiQuery) ||
+          (p.tags || []).some(t => t.toLowerCase().includes(_wikiQuery)))
+      : _wikiPages);
+  } else {
+    _renderWikiFiles(_wikiQuery
+      ? _wikiFiles.filter(f => f.path.toLowerCase().includes(_wikiQuery))
+      : _wikiFiles);
+  }
+}
+
+// keep old name working for any existing callers
+function filterWikiPages(q) { _wikiSearchInput(q); }
+
+function _wikiItemBtn(id, label, badge, isFile) {
+  const selAttr = _wikiSelectMode ? `data-wiki-sel="${esc(id)}"` : '';
+  const checked = _wikiSelected.has(id) ? 'checked' : '';
+  const selBox = _wikiSelectMode
+    ? `<input type="checkbox" class="wiki-sel-cb" ${checked} onclick="event.stopPropagation();_wikiToggleSel('${esc(id)}')">`
+    : '';
+  const clickFn = isFile
+    ? `loadWikiFile(this,'${esc(id)}')`
+    : `loadWikiPage(this,'${esc(id)}','${esc(label)}')`;
+  return `<button class="wiki-flat-item${_wikiSelected.has(id)?' wiki-sel-active':''}" ${selAttr} onclick="${clickFn}">
+    ${selBox}<span class="wiki-flat-title">${esc(label)}</span>${badge ? `<span class="wiki-cat-badge">${esc(badge)}</span>` : ''}
+  </button>`;
+}
+
+function _wikiToggleSel(id) {
+  if (_wikiSelected.has(id)) _wikiSelected.delete(id);
+  else _wikiSelected.add(id);
+  const countEl = document.getElementById('wiki-select-count');
+  if (countEl) countEl.textContent = `${_wikiSelected.size} selected`;
+  document.querySelectorAll(`[data-wiki-sel="${CSS.escape(id)}"]`).forEach(el => {
+    el.classList.toggle('wiki-sel-active', _wikiSelected.has(id));
+    const cb = el.querySelector('.wiki-sel-cb');
+    if (cb) cb.checked = _wikiSelected.has(id);
+  });
+}
+
+function toggleWikiSelect() {
+  _wikiSelectMode = !_wikiSelectMode;
+  if (!_wikiSelectMode) _wikiSelected.clear();
+  const bar = document.getElementById('wiki-select-bar');
+  if (bar) bar.style.display = _wikiSelectMode ? 'flex' : 'none';
+  const fab = document.getElementById('wiki-fab');
+  if (fab) { fab.textContent = _wikiSelectMode ? '✕' : '＋'; fab.title = _wikiSelectMode ? 'Cancel selection' : 'Select multiple files'; }
+  const countEl = document.getElementById('wiki-select-count');
+  if (countEl) countEl.textContent = '0 selected';
+  if (_wikiTab === 'pages') _renderWikiTree(_wikiPages);
+  else _renderWikiFiles(_wikiFiles);
 }
 
 function _renderWikiTree(pages) {
   const treeEl = document.getElementById('wiki-tree'); if (!treeEl) return;
+  // Preserve fab button
+  const fab = document.getElementById('wiki-fab');
   if (!pages.length) {
     treeEl.innerHTML = '<div class="docs-welcome" style="font-size:11px">No pages found.</div>';
+    if (fab) treeEl.appendChild(fab);
     return;
   }
 
   if (_wikiQuery) {
-    // Search mode: flat list with category badge
     treeEl.innerHTML = `<div class="wiki-count">${pages.length} result${pages.length===1?'':'s'}</div>` +
-      pages.map(p => `
-        <button class="wiki-flat-item" data-wiki-slug="${esc(p.slug)}" onclick="loadWikiPage(this,'${esc(p.slug)}','${esc(p.title)}')">
-          <span class="wiki-flat-title">${esc(p.title)}</span>
-          ${p.category ? `<span class="wiki-cat-badge">${esc(p.category)}</span>` : ''}
-        </button>`).join('');
+      pages.map(p => _wikiItemBtn(p.slug, p.title, p.category, false)).join('');
   } else {
-    // Browse mode: collapsible categories, show recent 10 first
     const recent = pages.slice(0, 10);
     const groups = {};
-    for (const p of pages) {
-      const cat = p.category || 'General';
-      if (!groups[cat]) groups[cat] = [];
-      groups[cat].push(p);
-    }
+    for (const p of pages) { const c = p.category||'General'; (groups[c]||(groups[c]=[])).push(p); }
     const catCount = Object.keys(groups).length;
     treeEl.innerHTML =
       `<div class="wiki-count">${pages.length} pages · ${catCount} categories</div>` +
-      `<div class="docs-section">
-        <div class="docs-section-label">Recent</div>
-        ${recent.map(p => `<button class="wiki-flat-item" data-wiki-slug="${esc(p.slug)}" onclick="loadWikiPage(this,'${esc(p.slug)}','${esc(p.title)}')">
-          <span class="wiki-flat-title">${esc(p.title)}</span>
-          ${p.category ? `<span class="wiki-cat-badge">${esc(p.category)}</span>` : ''}
-        </button>`).join('')}
-      </div>` +
-      Object.entries(groups).map(([cat, ps]) => `
-        <details class="wiki-cat-group">
-          <summary class="docs-section-label wiki-cat-summary">${esc(cat)} <span class="wiki-cat-count">${ps.length}</span></summary>
-          ${ps.map(p => `<button class="wiki-flat-item" data-wiki-slug="${esc(p.slug)}" onclick="loadWikiPage(this,'${esc(p.slug)}','${esc(p.title)}')">
-            <span class="wiki-flat-title">${esc(p.title)}</span>
-          </button>`).join('')}
-        </details>`).join('');
+      `<div class="docs-section"><div class="docs-section-label">Recent</div>${recent.map(p=>_wikiItemBtn(p.slug,p.title,p.category,false)).join('')}</div>` +
+      Object.entries(groups).map(([cat,ps])=>`<details class="wiki-cat-group">
+        <summary class="docs-section-label wiki-cat-summary">${esc(cat)} <span class="wiki-cat-count">${ps.length}</span></summary>
+        ${ps.map(p=>_wikiItemBtn(p.slug,p.title,'',false)).join('')}
+      </details>`).join('');
+  }
+  if (fab) treeEl.appendChild(fab);
+}
+
+function _renderWikiFiles(files) {
+  const treeEl = document.getElementById('wiki-tree'); if (!treeEl) return;
+  const fab = document.getElementById('wiki-fab');
+  if (!files.length) {
+    treeEl.innerHTML = '<div class="docs-welcome" style="font-size:11px">No files found.</div>';
+    if (fab) treeEl.appendChild(fab);
+    return;
+  }
+  // Group by ext type: md, json, other
+  const EXT_LABEL = { md:'Markdown', json:'JSON', txt:'Text', yaml:'YAML', yml:'YAML', js:'Scripts', ts:'Scripts', py:'Python' };
+  const groups = {};
+  for (const f of files) {
+    const grp = EXT_LABEL[f.ext] || (f.dir ? f.dir.split('/')[0] : 'Other');
+    (groups[grp]||(groups[grp]=[])).push(f);
+  }
+  treeEl.innerHTML =
+    `<div class="wiki-count">${files.length} files · ${Object.keys(groups).length} types</div>` +
+    Object.entries(groups).map(([grp,fs])=>`<details class="wiki-cat-group" ${grp==='Markdown'?'open':''}>
+      <summary class="docs-section-label wiki-cat-summary">${esc(grp)} <span class="wiki-cat-count">${fs.length}</span></summary>
+      ${fs.map(f=>_wikiItemBtn(f.path, f.name, f.dir||'', true)).join('')}
+    </details>`).join('');
+  if (fab) treeEl.appendChild(fab);
+}
+
+async function loadWikiFile(btn, path) {
+  if (!path) return;
+  const reader = document.getElementById('wiki-reader');
+  reader.innerHTML = '<div class="docs-loading">Loading…</div>';
+  try {
+    const res = await fetch(apiUrl(`/api/wiki/pages/${encodeURIComponent(path)}`), { headers: _authHeaders() });
+    if (!res.ok) {
+      // Fallback: try raw GitHub URL
+      reader.innerHTML = `<div class="docs-content"><p style="color:var(--m);font-size:12px">File: <code>${esc(path)}</code></p><p style="font-size:11px;color:var(--m2)">Raw preview not available for this file type.</p></div>`;
+      return;
+    }
+    const data = await res.json();
+    reader.innerHTML = `<div class="docs-content"><h1>${esc(data.title||path)}</h1>${_markdownToHtml(data.content||'')}</div>`;
+    if (window.mermaid) {
+      const nodes = reader.querySelectorAll('.mermaid');
+      if (nodes.length) mermaid.run({ nodes }).catch(()=>{});
+    }
+  } catch (e) {
+    reader.innerHTML = `<div class="docs-welcome" style="color:var(--error)">Failed to load: ${esc(e.message)}</div>`;
   }
 }
 
@@ -1681,6 +1795,83 @@ Rules:
       <div style="font-weight:700;font-size:14px;color:var(--txt)">${isQuiz ? '✏️ Quiz prompt' : '📖 Vocab prompt'} — ${esc(title)}</div>
       <div style="font-size:11px;color:var(--m)">Copy this prompt and run it with Gemini CLI or Claude Code to generate content.</div>
       <textarea id="wiki-prompt-text" style="flex:1;min-height:280px;background:var(--bg);box-shadow:var(--sh-in);border:none;border-radius:10px;padding:12px;font-size:11px;font-family:'SF Mono','Monaco',monospace;color:var(--txt);resize:vertical;line-height:1.5" readonly>${prompt}</textarea>
+      <div style="display:flex;gap:8px">
+        <button class="save-btn" onclick="navigator.clipboard.writeText(document.getElementById('wiki-prompt-text').value).then(()=>{this.textContent='✓ Copied';setTimeout(()=>{this.textContent='Copy'},1500)})">Copy</button>
+        <button class="refresh-btn" onclick="document.getElementById('wiki-prompt-modal').remove()">Close</button>
+      </div>
+    </div>`;
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+  document.body.appendChild(modal);
+}
+
+function showWikiMultiPrompt(type) {
+  if (!_wikiSelected.size) { alert('Select at least one page first.'); return; }
+  const isQuiz = type === 'quiz';
+  const items = [..._wikiSelected];
+  const pages = _wikiTab === 'pages'
+    ? items.map(id => { const p = _wikiPages.find(x => x.slug===id); return p ? `"${p.title}" (slug: ${id})` : id; })
+    : items.map(id => `file: ${id}`);
+  const pageList = pages.map((p,i) => `${i+1}. ${p}`).join('\n');
+  const ids = items.join(', ');
+
+  const prompt = isQuiz
+    ? `You are an expert educator. Using the following wiki pages, create a combined quiz topic JSON for the Gem Brain quiz app.
+
+Pages to cover:
+${pageList}
+
+The format must match this schema:
+{
+  "id": "combined-quiz",
+  "title": "Combined Quiz",
+  "emoji": "🧠",
+  "slides": [
+    { "title": "...", "bullets": ["...", "..."], "note": "..." }
+  ],
+  "quiz": [
+    { "q": "Question?", "options": ["A", "B", "C", "D"], "answer": 0, "explanation": "..." }
+  ]
+}
+
+Rules:
+- 2–4 slides per source page covering key concepts
+- 3–6 quiz questions per source page, multiple choice, 4 options each
+- Mix questions across all pages for an integrated quiz
+- answer is the index (0-3) of the correct option
+- Include page title as a tag or note in each question's explanation
+- Output only valid JSON, no markdown fencing`
+    : `You are an expert educator. Using the following wiki pages, create vocabulary flashcard entries for the Gem Brain vocab app.
+
+Pages to cover:
+${pageList}
+
+The format must match this schema (array of entries):
+[
+  {
+    "term": "Term or concept",
+    "definition": "Clear 1-2 sentence definition",
+    "example": "Example sentence or use case",
+    "tags": ["tag1", "tag2", "source-page-slug"]
+  }
+]
+
+Rules:
+- Extract 5–15 key terms per source page
+- Include the source page slug in the tags array so terms can be filtered by origin
+- Definitions should be precise and self-contained
+- Output only valid JSON array, no markdown fencing`;
+
+  const existingModal = document.getElementById('wiki-prompt-modal');
+  if (existingModal) existingModal.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'wiki-prompt-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)';
+  modal.innerHTML = `
+    <div style="background:var(--bg);box-shadow:var(--sh-lg);border-radius:16px;width:min(680px,95vw);max-height:85vh;display:flex;flex-direction:column;padding:20px;gap:12px">
+      <div style="font-weight:700;font-size:14px;color:var(--txt)">${isQuiz ? '✏️ Quiz prompt' : '📖 Vocab prompt'} — ${_wikiSelected.size} pages</div>
+      <div style="font-size:11px;color:var(--m)">Pages: ${esc(pages.join(' · '))}. Copy and run locally with Gemini CLI or Claude Code.</div>
+      <textarea id="wiki-prompt-text" style="flex:1;min-height:300px;background:var(--bg);box-shadow:var(--sh-in);border:none;border-radius:10px;padding:12px;font-size:11px;font-family:'SF Mono','Monaco',monospace;color:var(--txt);resize:vertical;line-height:1.5" readonly>${prompt}</textarea>
       <div style="display:flex;gap:8px">
         <button class="save-btn" onclick="navigator.clipboard.writeText(document.getElementById('wiki-prompt-text').value).then(()=>{this.textContent='✓ Copied';setTimeout(()=>{this.textContent='Copy'},1500)})">Copy</button>
         <button class="refresh-btn" onclick="document.getElementById('wiki-prompt-modal').remove()">Close</button>

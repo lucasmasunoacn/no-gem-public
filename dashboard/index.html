@@ -44,9 +44,9 @@
   <div class="header-controls">
     <span id="cost-badge" class="cost-badge"></span>
     <div class="ndrop" id="user-drop">
-      <button class="hbtn pill user-pill-btn" id="user-pill" onclick="toggleDrop('user-drop')" title="Account" style="gap:5px">
-        <img id="user-avatar" src="" width="20" height="20" style="border-radius:50%;display:none">
-        <span id="user-name" style="font-size:11px;font-weight:700;color:var(--m)">—</span>
+      <button class="hbtn pill user-pill-btn" id="user-pill" onclick="toggleDrop('user-drop')" title="Account" style="gap:5px;padding:3px">
+        <img id="user-avatar" src="" width="30" height="30" style="border-radius:50%;display:none;object-fit:cover">
+        <span id="user-name" style="font-size:11px;font-weight:700;color:var(--m);padding:0 4px">—</span>
       </button>
       <div class="ndrop-panel" id="user-panel" style="right:0;left:auto;min-width:170px">
         <div style="padding:10px 12px 4px;font-size:11px;font-weight:700;color:var(--txt)" id="user-detail-name">—</div>
@@ -167,13 +167,28 @@
   <section class="page" id="page-wiki" data-mob-panel="wiki">
     <div class="page-hd">
       <div class="page-title">Wiki</div>
-      <input class="wiki-search-input" id="wiki-search" type="text" placeholder="Search pages…" oninput="filterWikiPages(this.value)" />
+      <input class="wiki-search-input" id="wiki-search" type="text" placeholder="Search…" oninput="_wikiSearchInput(this.value)" />
+    </div>
+    <!-- Tab bar: Wiki pages (Firestore) | Files (GitHub raw) -->
+    <div class="tab-bar" role="tablist" style="margin-bottom:10px">
+      <button class="tab-btn active" id="wiki-tab-pages" onclick="setWikiTab('pages')">Wiki pages</button>
+      <button class="tab-btn" id="wiki-tab-files" onclick="setWikiTab('files')">Raw files</button>
     </div>
     <div class="docs-layout">
-      <div class="docs-tree-panel" id="wiki-tree"></div>
+      <div class="docs-tree-panel" id="wiki-tree" style="position:relative">
+        <!-- Floating multi-select button -->
+        <button class="wiki-fab" id="wiki-fab" onclick="toggleWikiSelect()" title="Select multiple files for quiz/vocab prompt">＋</button>
+      </div>
       <div class="docs-reader" id="wiki-reader">
         <div class="docs-welcome">Select a page from the wiki</div>
       </div>
+    </div>
+    <!-- Multi-select toolbar (hidden by default) -->
+    <div class="wiki-select-bar" id="wiki-select-bar" style="display:none">
+      <span id="wiki-select-count">0 selected</span>
+      <button class="save-btn" onclick="showWikiMultiPrompt('quiz')">✏️ Quiz prompt</button>
+      <button class="save-btn" onclick="showWikiMultiPrompt('vocab')">📖 Vocab prompt</button>
+      <button class="refresh-btn" onclick="toggleWikiSelect()">✕ Cancel</button>
     </div>
   </section>
 
@@ -532,6 +547,27 @@
       </div>
     </div>
 
+    <!-- Create repo form (collapsed by default) -->
+    <details class="wiki-cat-group" id="new-repo-details" style="margin-bottom:16px">
+      <summary style="font-size:12px;font-weight:700;color:var(--acc)">➕ New repository</summary>
+      <div class="qs-card" style="margin-top:8px">
+        <div class="qs-field">
+          <input class="form-input" id="new-repo-name" placeholder="Repository name" style="margin-bottom:6px;font-size:11px">
+          <input class="form-input" id="new-repo-desc" placeholder="Description (optional)" style="margin-bottom:6px;font-size:11px">
+          <div style="display:flex;gap:10px;align-items:center;margin-bottom:10px">
+            <label style="font-size:11px;color:var(--m);cursor:pointer;display:flex;align-items:center;gap:4px">
+              <input type="checkbox" id="new-repo-private" checked> Private
+            </label>
+            <label style="font-size:11px;color:var(--m);cursor:pointer;display:flex;align-items:center;gap:4px">
+              <input type="checkbox" id="new-repo-init" checked> Initialize with README
+            </label>
+          </div>
+          <button class="save-btn" onclick="createRepo()" id="create-repo-btn">Create repository</button>
+          <div id="create-repo-status" style="font-size:10px;color:var(--m);margin-top:4px"></div>
+        </div>
+      </div>
+    </details>
+
     <!-- Pinned repos -->
     <div class="section-hd">Your repos</div>
     <div id="pinned-repos" style="margin-bottom:16px"></div>
@@ -545,25 +581,6 @@
 
     <!-- Repo list -->
     <div id="repo-list" class="feed-box" style="margin-bottom:16px"></div>
-
-    <!-- Create repo form -->
-    <div class="section-hd">Create new repository</div>
-    <div class="qs-card">
-      <div class="qs-field">
-        <input class="form-input" id="new-repo-name" placeholder="Repository name" style="margin-bottom:6px;font-size:11px">
-        <input class="form-input" id="new-repo-desc" placeholder="Description (optional)" style="margin-bottom:6px;font-size:11px">
-        <div style="display:flex;gap:10px;align-items:center;margin-bottom:10px">
-          <label style="font-size:11px;color:var(--m);cursor:pointer;display:flex;align-items:center;gap:4px">
-            <input type="checkbox" id="new-repo-private" checked> Private
-          </label>
-          <label style="font-size:11px;color:var(--m);cursor:pointer;display:flex;align-items:center;gap:4px">
-            <input type="checkbox" id="new-repo-init" checked> Initialize with README
-          </label>
-        </div>
-        <button class="save-btn" onclick="createRepo()" id="create-repo-btn">Create repository</button>
-        <div id="create-repo-status" style="font-size:10px;color:var(--m);margin-top:4px"></div>
-      </div>
-    </div>
   </section>
 
 </main>
