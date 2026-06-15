@@ -1,7 +1,7 @@
 /* ═══════════════════════════════════════════════════════════
-   shared/ui.js — Second Brain shared utilities
+   shared/ui.js — no-gem-public shared utilities
    Theme toggle · HTML escape · array shuffle
-   Loaded on every page before page-specific scripts.
+   Loaded on every page (quiz, vocab, dashboard) before page-specific scripts.
    ═══════════════════════════════════════════════════════════ */
 
 /* ── Theme ─────────────────────────────────────────────── */
@@ -9,7 +9,7 @@ const root = document.documentElement;
 const themeBtn = document.getElementById('theme-btn');
 
 (function initTheme() {
-  const stored = localStorage.getItem('quiz-theme');
+  const stored = localStorage.getItem('nogem-theme');
   const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
   const t = stored || (systemDark ? 'dark' : 'light');
   root.setAttribute('data-theme', t);
@@ -20,8 +20,7 @@ function toggleTheme() {
   const t = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
   root.setAttribute('data-theme', t);
   if (themeBtn) themeBtn.textContent = t === 'dark' ? '☀️' : '🌙';
-  localStorage.setItem('quiz-theme', t);
-  // Pages that need to react (e.g. redraw charts) listen for this event.
+  localStorage.setItem('nogem-theme', t);
   window.dispatchEvent(new CustomEvent('themechange', { detail: t }));
 }
 

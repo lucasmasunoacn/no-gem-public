@@ -17,7 +17,7 @@
  *  or be omitted (no broken links).
  */
 
-window.VOCAB_WIKI_BASE = 'https://github.com/lucasmasunoacn/obsidian/blob/main/';
+window.VOCAB_WIKI_BASE = 'https://github.com/lucasmasunoacn/no-gem-wiki/blob/main/';
 
 const CAT = {
   RISK: 'Finance · Risk & Regulation',

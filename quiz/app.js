@@ -11,7 +11,76 @@ window.addEventListener('themechange', () => {
 /* ══════════════════════════════════════════════════════════
    HOME SCREEN
 ══════════════════════════════════════════════════════════ */
-const WIKI_BASE = 'https://github.com/lucasmasunoacn/obsidian/blob/main/';
+const WIKI_BASE = 'https://github.com/lucasmasunoacn/no-gem-wiki/blob/main/';
+
+/* ── Quiz API / auth ────────────────────────────────────── */
+const _QP = new URLSearchParams(window.location.search);
+const API_BASE = (_QP.get('api') || localStorage.getItem('nogem-api') || '').replace(/\/$/, '');
+if (API_BASE) localStorage.setItem('nogem-api', API_BASE);
+
+// Handle ?quiz_token= redirect from OAuth callback
+(function _captureToken() {
+  const t = _QP.get('quiz_token');
+  if (!t) return;
+  localStorage.setItem('quiz-jwt', t);
+  const url = new URL(window.location.href);
+  url.searchParams.delete('quiz_token');
+  history.replaceState(null, '', url.toString());
+})();
+
+function _quizJwt()  { return localStorage.getItem('quiz-jwt') || ''; }
+function _quizUser() {
+  const jwt = _quizJwt();
+  if (!jwt) return null;
+  try {
+    const b = jwt.split('.')[1];
+    return JSON.parse(atob(b.replace(/-/g, '+').replace(/_/g, '/')));
+  } catch { return null; }
+}
+
+function _renderQuizUser() {
+  const btn = document.getElementById('quiz-user-btn');
+  if (!btn) return;
+  const u = _quizUser();
+  if (u) {
+    btn.innerHTML = (u.avatar ? `<img src="${u.avatar}&s=20" style="width:18px;height:18px;border-radius:50%;vertical-align:middle;margin-right:4px">` : '') + esc(u.name || u.sub);
+    btn.title = `Signed in as @${u.sub} — click to sign out`;
+    btn.onclick = () => { localStorage.removeItem('quiz-jwt'); _renderQuizUser(); _syncLoad(); };
+  } else {
+    btn.innerHTML = '↑ Sync';
+    btn.title = API_BASE ? 'Sign in with GitHub to sync progress' : 'Add ?api=<backend-url> to enable sync';
+    btn.onclick = API_BASE
+      ? () => { window.location.href = `${API_BASE}/auth/quiz-login?return=${encodeURIComponent(window.location.href)}`; }
+      : () => alert('Add ?api=<your-cloud-run-url> to the URL to enable sync.');
+  }
+}
+
+async function _syncLoad() {
+  if (!API_BASE || !_quizJwt()) return;
+  try {
+    const r = await fetch(`${API_BASE}/api/quiz/progress`, { headers: { Authorization: `Bearer ${_quizJwt()}` } });
+    if (!r.ok) return;
+    const { srs = {}, scores = {}, hidden = [] } = await r.json();
+    if (Object.keys(srs).length)    localStorage.setItem('quiz-srs', JSON.stringify(srs));
+    if (Object.keys(scores).length) localStorage.setItem('quiz-scores', JSON.stringify(scores));
+    if (hidden.length)              localStorage.setItem('quiz-hidden-topics', JSON.stringify(hidden));
+    buildHome();
+  } catch {}
+}
+
+async function _syncSave() {
+  if (!API_BASE || !_quizJwt()) return;
+  try {
+    const srs     = JSON.parse(localStorage.getItem('quiz-srs')     || '{}');
+    const scores  = JSON.parse(localStorage.getItem('quiz-scores')  || '{}');
+    const hidden  = JSON.parse(localStorage.getItem('quiz-hidden-topics') || '[]');
+    await fetch(`${API_BASE}/api/quiz/progress`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${_quizJwt()}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ srs, scores, hidden }),
+    });
+  } catch {}
+}
 let manageMode = false;
 
 /* ── New-request form state ─────────────────────────── */
@@ -637,6 +706,8 @@ function showResults() {
 /* ══════════════════════════════════════════════════════════
    INIT
 ══════════════════════════════════════════════════════════ */
+_renderQuizUser();
+_syncLoad();
 buildHome();
 
 document.getElementById('nr-drop').addEventListener('click', e => {

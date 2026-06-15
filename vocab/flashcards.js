@@ -154,7 +154,57 @@ document.addEventListener('keydown', e => {
   if (flipped) { const map = { '1': 'again', '2': 'hard', '3': 'good', '4': 'easy' }; if (map[e.key]) { e.preventDefault(); rate(map[e.key]); } }
 });
 
+/* ── Sync (optional — requires ?api= and GitHub login) ── */
+const _VQPARAMS = new URLSearchParams(window.location.search);
+const _VAPI = (_VQPARAMS.get('api') || localStorage.getItem('nogem-api') || '').replace(/\/$/, '');
+if (_VAPI) localStorage.setItem('nogem-api', _VAPI);
+
+(function _captureVocabToken() {
+  const t = _VQPARAMS.get('quiz_token');
+  if (!t) return;
+  localStorage.setItem('quiz-jwt', t);
+  const url = new URL(window.location.href);
+  url.searchParams.delete('quiz_token');
+  history.replaceState(null, '', url.toString());
+})();
+
+function _vocabJwt()  { return localStorage.getItem('quiz-jwt') || ''; }
+function _vocabUser() {
+  const jwt = _vocabJwt();
+  if (!jwt) return null;
+  try { return JSON.parse(atob(jwt.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))); } catch { return null; }
+}
+
+function _renderVocabUser() {
+  const btn = document.getElementById('vocab-user-btn');
+  if (!btn) return;
+  const u = _vocabUser();
+  if (u) {
+    btn.innerHTML = (u.avatar ? `<img src="${u.avatar}&s=20" style="width:18px;height:18px;border-radius:50%;vertical-align:middle;margin-right:4px">` : '') + esc(u.name || u.sub);
+    btn.title = `Signed in as @${u.sub} — click to sign out`;
+    btn.onclick = () => { localStorage.removeItem('quiz-jwt'); _renderVocabUser(); };
+  } else {
+    btn.innerHTML = '↑ Sync';
+    btn.title = _VAPI ? 'Sign in with GitHub to sync progress' : 'Add ?api=<backend-url> to enable sync';
+    btn.onclick = _VAPI
+      ? () => { window.location.href = `${_VAPI}/auth/quiz-login?return=${encodeURIComponent(window.location.href)}`; }
+      : () => alert('Add ?api=<your-cloud-run-url> to the URL to enable sync.');
+  }
+}
+
+async function _vocabSyncLoad() {
+  if (!_VAPI || !_vocabJwt()) return;
+  try {
+    const r = await fetch(`${_VAPI}/api/quiz/progress`, { headers: { Authorization: `Bearer ${_vocabJwt()}` } });
+    if (!r.ok) return;
+    const { srs: remSrs = {} } = await r.json();
+    if (Object.keys(remSrs).length) { Object.assign(srs, remSrs); saveSrs(); renderStats(); }
+  } catch {}
+}
+
 /* ── Init ─────────────────────────────────────────────── */
+_renderVocabUser();
+_vocabSyncLoad();
 document.getElementById('dirBtn').textContent = dir === 'fwd' ? '🔁 Term → Definition' : '🔁 Definition → Term';
 if (!VOCAB.length) {
   document.getElementById('stage').innerHTML = '<div class="done"><div class="em">📭</div><h3>No vocabulary yet</h3><p>Add terms via the Requests page, then process them into vocab.js.</p></div>';
