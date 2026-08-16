@@ -9,7 +9,7 @@
 const _params = new URLSearchParams(window.location.search);
 // Persist api= param so the URL is bookmarkable without query strings.
 // Default to the production Cloud Run URL so no manual setup is needed.
-const _DEFAULT_API = 'https://no-gem-792242079623.asia-northeast1.run.app';
+const _DEFAULT_API = 'https://hachi-core-685554938840.asia-northeast1.run.app';
 const API_BASE = (_params.get('api') || localStorage.getItem('nogem-api') || _DEFAULT_API).replace(/\/$/, '');
 if (_params.get('api')) localStorage.setItem('nogem-api', _params.get('api')); // persist override
 
