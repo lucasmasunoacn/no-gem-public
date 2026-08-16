@@ -229,6 +229,7 @@ function navTo(pageId) {
   if (pageId === 'analytics') _initCharts();
   if (pageId === 'docs') _initDocsIfNeeded();
   if (pageId === 'wiki') _initWikiIfNeeded();
+  if (pageId === 'articles') _initArticlesIfNeeded();
   if (pageId === 'settings') { _loadContextSettings(); }
   if (pageId === 'channels') { _initChannelsPage(); _loadContextSettings(); }
   if (pageId === 'repos') _initReposPage();
@@ -2462,6 +2463,283 @@ async function createRepo() {
   } finally {
     if (btn) { btn.disabled = false; btn.textContent = 'Create repository'; }
   }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ARTICLES — topic categories + the articles they produce
+
+   A topic category is a recurring content stream: an editable editorial prompt,
+   an audience, a cadence, and a star rating rolled up from its articles. This
+   panel is where that prompt gets tuned after the scout proposes it.
+══════════════════════════════════════════════════════════════ */
+let CATEGORIES = [];
+let ARTICLES = [];
+let ARTICLE_META = null;   // option lists, fetched once from /api/article-categories/meta
+let _articlesLoaded = false;
+
+function setATab(btn, tab) {
+  document.querySelectorAll('[data-atab]').forEach(b => b.classList.toggle('active', b === btn));
+  document.getElementById('a-categories').classList.toggle('hidden', tab !== 'categories');
+  document.getElementById('a-articles').classList.toggle('hidden', tab !== 'articles');
+}
+
+async function _initArticlesIfNeeded() {
+  if (_articlesLoaded) return;
+  _articlesLoaded = true;
+  await loadArticlesPage();
+}
+
+async function loadArticlesPage() {
+  const catBox = document.getElementById('a-categories');
+  const artBox = document.getElementById('a-articles');
+  if (catBox && !catBox.innerHTML) catBox.innerHTML = `<div style="color:var(--m);font-size:11px;padding:8px 0">Loading…</div>`;
+  try {
+    const [meta, cats, arts] = await Promise.all([
+      ARTICLE_META ? Promise.resolve(ARTICLE_META)
+        : fetch(apiUrl('/api/article-categories/meta'), { headers: _authHeaders() }).then(r => r.json()),
+      fetch(apiUrl('/api/article-categories'), { headers: _authHeaders() }).then(r => r.json()),
+      fetch(apiUrl('/api/articles?limit=100'), { headers: _authHeaders() }).then(r => r.json()),
+    ]);
+    ARTICLE_META = meta;
+    CATEGORIES = cats.categories || [];
+    ARTICLES = arts.articles || [];
+  } catch (err) {
+    if (catBox) catBox.innerHTML = `<div style="color:var(--error);font-size:11px;padding:8px 0">Failed to load: ${esc(err.message)}</div>`;
+    return;
+  }
+  if (catBox) catBox.innerHTML = _buildCategoryCards(CATEGORIES);
+  if (artBox) artBox.innerHTML = _buildArticleRows(ARTICLES);
+}
+
+const _STARS = (n) => '★'.repeat(Math.round(n)) + '☆'.repeat(Math.max(0, 5 - Math.round(n)));
+
+const _STATUS_STYLE = {
+  suggested: { label: '未承認', color: '#FBBF24' },
+  active:    { label: '稼働中', color: '#34D399' },
+  paused:    { label: '停止中', color: '#94A3B8' },
+  blocked:   { label: '却下',   color: '#F87171' },
+};
+
+function _buildCategoryCards(categories) {
+  if (!categories.length) {
+    return `<div style="color:var(--m);font-size:11px;padding:8px 0">
+      カテゴリがまだありません。「🧭 候補を探す」でスカウトに提案させてください。</div>`;
+  }
+  // Unapproved suggestions first — they're the ones waiting on the user.
+  const order = { suggested: 0, active: 1, paused: 2, blocked: 3 };
+  return [...categories]
+    .sort((a, b) => (order[a.status] ?? 9) - (order[b.status] ?? 9))
+    .map(_categoryCard).join('');
+}
+
+function _categoryCard(c) {
+  const st = _STATUS_STYLE[c.status] ?? { label: c.status, color: 'var(--m)' };
+  const t = c.targeting || {};
+  const rating = c.rating || {};
+  const freqOpts = (ARTICLE_META?.frequencies || []).map(f =>
+    `<option value="${f.id}"${f.id === c.frequency ? ' selected' : ''}>${esc(f.label)}</option>`).join('');
+  const genderOpts = [['any', '男女問わず'], ['male', '男性中心'], ['female', '女性中心']].map(([v, l]) =>
+    `<option value="${v}"${v === (t.gender || 'any') ? ' selected' : ''}>${l}</option>`).join('');
+  const scaleOpts = [['mass', 'マス（幅広い）'], ['niche', 'ニッチ（狭く深い）']].map(([v, l]) =>
+    `<option value="${v}"${v === (t.scale || 'mass') ? ' selected' : ''}>${l}</option>`).join('');
+
+  const ratingText = rating.count
+    ? `<span title="直近${rating.count}本の平均" style="color:#FBBF24">${_STARS(rating.average)}</span>
+       <span style="color:var(--m)">${rating.average} (${rating.count}本)</span>`
+    : `<span style="color:var(--m)">未評価</span>`;
+
+  // Suggestions get approve/reject; live categories get pause/resume.
+  const statusActions = c.status === 'suggested'
+    ? `<button class="save-btn" onclick="catAction('${c.id}','approve')">承認</button>
+       <button class="act-btn cancel" onclick="catAction('${c.id}','reject')">却下</button>`
+    : c.status === 'paused'
+      ? `<button class="save-btn" onclick="catAction('${c.id}','resume')">再開</button>`
+      : c.status === 'active'
+        ? `<button class="refresh-btn" onclick="catAction('${c.id}','pause')">一時停止</button>`
+        : '';
+
+  return `<div class="cat-card" data-id="${c.id}">
+    <div class="cat-hd">
+      <div class="cat-name">${esc(c.name)}</div>
+      <span class="cat-pill" style="color:${st.color}">${st.label}</span>
+      <div class="cat-rating">${ratingText}</div>
+    </div>
+    <div class="cat-def">${esc(c.definition || '')}</div>
+
+    <label class="cat-label">編集方針 — 生成される記事の切り口とトーンを決めます</label>
+    <textarea class="cat-prompt" id="cat-prompt-${c.id}" rows="4"
+      placeholder="例: 常に「実際に運用したらどこで壊れるか」の視点で書く。">${esc(c.prompt || '')}</textarea>
+
+    <div class="cat-grid">
+      <label class="cat-field"><span>頻度</span>
+        <select id="cat-freq-${c.id}">${freqOpts}</select></label>
+      <label class="cat-field"><span>年齢</span>
+        <span class="cat-age">
+          <input type="number" id="cat-agemin-${c.id}" value="${t.ageMin ?? 25}" min="10" max="99">
+          <span>〜</span>
+          <input type="number" id="cat-agemax-${c.id}" value="${t.ageMax ?? 45}" min="10" max="99">
+        </span></label>
+      <label class="cat-field"><span>性別</span>
+        <select id="cat-gender-${c.id}">${genderOpts}</select></label>
+      <label class="cat-field"><span>読者規模</span>
+        <select id="cat-scale-${c.id}">${scaleOpts}</select></label>
+      <label class="cat-field cat-wide"><span>専門性</span>
+        <input type="text" id="cat-spec-${c.id}" value="${esc(t.specialization || '')}"
+          placeholder="例: 事業会社のマーケター（空欄なら専門を前提としない）"></label>
+    </div>
+
+    <div class="cat-actions">
+      <button class="save-btn" onclick="saveCategory('${c.id}')">保存</button>
+      ${c.promptSuggested && c.promptSuggested !== c.prompt
+        ? `<button class="refresh-btn" onclick="resetCategoryPrompt('${c.id}')">提案に戻す</button>` : ''}
+      ${statusActions}
+      <button class="refresh-btn" onclick="generateNow('${c.id}')" title="スケジュールとは別に1本書く">今すぐ1本書く</button>
+      <button class="act-btn cancel" onclick="deleteCategory('${c.id}')" title="完全に削除">🗑</button>
+    </div>
+    <div class="cat-foot">
+      ${c.articleCount ? `${c.articleCount}本公開` : 'まだ記事なし'}
+      ${c.lastGeneratedAt ? ` · 最終 ${_fmtDate(c.lastGeneratedAt)}` : ''}
+    </div>
+  </div>`;
+}
+
+function _buildArticleRows(articles) {
+  if (!articles.length) return `<div style="color:var(--m);font-size:11px;padding:8px 0">記事がまだありません。</div>`;
+  const catName = (id) => CATEGORIES.find(c => c.id === id)?.name || (id ? '(削除済みカテゴリ)' : 'URL考察');
+  return articles.map(a => `<div class="src-row" data-id="${a.id}">
+    <div class="src-body">
+      <div class="src-name">${a.wikiUrl
+        ? `<a href="${esc(a.wikiUrl)}" target="_blank" rel="noopener" style="color:inherit">${esc(a.title || a.angle || '(無題)')}</a>`
+        : esc(a.title || a.angle || '(無題)')}</div>
+      <div class="src-meta">
+        <span style="color:#A78BFA">${esc(catName(a.categoryId))}</span>
+        ${a.articleKind ? `<span style="color:#60A5FA">${esc(a.articleKind)}</span>` : ''}
+        ${a.status !== 'published' ? `<span style="color:var(--error)">${esc(a.status)}</span>` : ''}
+        ${a.charCount ? `<span style="color:var(--m)">約${a.charCount.toLocaleString()}字</span>` : ''}
+        ${a.imageCount ? `<span style="color:var(--m)">画像${a.imageCount} (web${a.webImageCount ?? 0})</span>` : ''}
+        <span style="color:var(--m)">${_fmtDate(a.publishedAt || a.createdAt)}</span>
+      </div>
+    </div>
+    <div class="art-score">${[1, 2, 3, 4, 5].map(n =>
+      `<button class="art-star${a.score >= n ? ' on' : ''}" title="${n}点をつける"
+        onclick="scoreArticleRow('${a.id}',${n})">★</button>`).join('')}</div>
+  </div>`).join('');
+}
+
+function _fmtDate(ts) {
+  if (!ts) return '';
+  // Firestore Timestamps arrive over JSON as { _seconds } or an ISO string.
+  const ms = ts._seconds ? ts._seconds * 1000 : (ts.seconds ? ts.seconds * 1000 : Date.parse(ts));
+  return Number.isFinite(ms) ? new Date(ms).toISOString().slice(0, 10) : '';
+}
+
+const _val = (id) => document.getElementById(id)?.value ?? '';
+
+async function saveCategory(id) {
+  const body = {
+    prompt: _val(`cat-prompt-${id}`),
+    frequency: _val(`cat-freq-${id}`),
+    targeting: {
+      ageMin: Number(_val(`cat-agemin-${id}`)),
+      ageMax: Number(_val(`cat-agemax-${id}`)),
+      gender: _val(`cat-gender-${id}`),
+      scale: _val(`cat-scale-${id}`),
+      specialization: _val(`cat-spec-${id}`),
+    },
+  };
+  const res = await fetch(apiUrl(`/api/article-categories/${id}`), {
+    method: 'PATCH', headers: { ..._authHeaders(), 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+  }).catch(() => null);
+  if (!res?.ok) { showToast('保存に失敗しました', 'error'); return; }
+  showToast('保存しました。次回以降の記事に反映されます。', 'success');
+  await loadArticlesPage();
+}
+
+async function resetCategoryPrompt(id) {
+  showConfirm('編集方針を最初の提案内容に戻しますか？', async () => {
+    await fetch(apiUrl(`/api/article-categories/${id}/reset-prompt`), { method: 'POST', headers: _authHeaders() }).catch(() => {});
+    showToast('提案内容に戻しました。', 'success');
+    await loadArticlesPage();
+  }, document.querySelector(`.cat-card[data-id="${CSS.escape(id)}"]`));
+}
+
+async function catAction(id, action) {
+  const labels = { approve: '承認', reject: '却下', pause: '一時停止', resume: '再開' };
+  const run = async () => {
+    await fetch(apiUrl(`/api/article-categories/${id}/${action}`), { method: 'POST', headers: _authHeaders() }).catch(() => {});
+    showToast(`${labels[action]}しました。`, 'success');
+    await loadArticlesPage();
+  };
+  // Rejecting is the only one that can't be undone from this panel — it marks the category
+  // "do not re-suggest", so make the user confirm it.
+  if (action === 'reject') {
+    showConfirm('却下すると今後スカウトから再提案されません。よろしいですか？', run,
+      document.querySelector(`.cat-card[data-id="${CSS.escape(id)}"]`));
+  } else { await run(); }
+}
+
+async function deleteCategory(id) {
+  showConfirm('このカテゴリを完全に削除しますか？（生成済みの記事は残ります）', async () => {
+    await fetch(apiUrl(`/api/article-categories/${id}`), { method: 'DELETE', headers: _authHeaders() }).catch(() => {});
+    showToast('削除しました。', 'success');
+    await loadArticlesPage();
+  }, document.querySelector(`.cat-card[data-id="${CSS.escape(id)}"]`));
+}
+
+async function generateNow(id) {
+  const res = await fetch(apiUrl(`/api/article-categories/${id}/generate`), { method: 'POST', headers: _authHeaders() }).catch(() => null);
+  if (!res?.ok) { showToast('起動に失敗しました', 'error'); return; }
+  showToast('記事を書き始めました。完成すると #articles に投稿されます。', 'success');
+}
+
+async function scoutCategories() {
+  const res = await fetch(apiUrl('/api/article-categories/scout'), { method: 'POST', headers: _authHeaders() }).catch(() => null);
+  if (!res?.ok) { showToast('起動に失敗しました', 'error'); return; }
+  showToast('カテゴリ候補を探しています。提案は #approvals に届きます。', 'success');
+}
+
+async function scoreArticleRow(id, score) {
+  const res = await fetch(apiUrl(`/api/articles/${id}/score`), {
+    method: 'POST', headers: { ..._authHeaders(), 'Content-Type': 'application/json' }, body: JSON.stringify({ score }),
+  }).catch(() => null);
+  if (!res?.ok) { showToast('評価に失敗しました', 'error'); return; }
+  const out = await res.json().catch(() => ({}));
+  showToast(out.average ? `${score}点を記録（カテゴリ平均 ${out.average}）` : `${score}点を記録しました`, 'success');
+  await loadArticlesPage();
+}
+
+// Ad-hoc article from any URL — the dashboard twin of the /article Discord command.
+function showArticleFromUrl() {
+  document.getElementById('article-url-modal')?.remove();
+  const modal = document.createElement('div');
+  modal.id = 'article-url-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)';
+  modal.innerHTML = `
+    <div style="background:var(--bg);box-shadow:var(--sh-lg);border-radius:16px;width:min(520px,95vw);display:flex;flex-direction:column;padding:20px;gap:12px">
+      <div style="font-weight:700;font-size:14px;color:var(--txt)">📝 URLから考察記事を書く</div>
+      <div style="font-size:11px;color:var(--m)">YouTube動画・記事・論文など、URLなら何でも。題材を読み込んで背景を調べ、考察記事にします。</div>
+      <input class="form-input" id="afu-url" placeholder="https://www.youtube.com/watch?v=…" style="font-size:12px">
+      <input class="form-input" id="afu-note" placeholder="補足指示（任意）例: 日本の事例と比較して" style="font-size:12px">
+      <div style="display:flex;gap:8px">
+        <button class="save-btn" onclick="submitArticleFromUrl()">書き始める</button>
+        <button class="refresh-btn" onclick="document.getElementById('article-url-modal').remove()">キャンセル</button>
+      </div>
+    </div>`;
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+  document.body.appendChild(modal);
+  document.getElementById('afu-url').focus();
+}
+
+async function submitArticleFromUrl() {
+  const url = _val('afu-url').trim();
+  if (!/^https?:\/\//i.test(url)) { showToast('http(s) で始まるURLを入れてください', 'error'); return; }
+  const res = await fetch(apiUrl('/api/articles/from-url'), {
+    method: 'POST', headers: { ..._authHeaders(), 'Content-Type': 'application/json' },
+    body: JSON.stringify({ url, note: _val('afu-note').trim() }),
+  }).catch(() => null);
+  document.getElementById('article-url-modal')?.remove();
+  if (!res?.ok) { showToast('起動に失敗しました', 'error'); return; }
+  showToast('記事を書き始めました。完成すると #articles に投稿されます。', 'success');
 }
 
 /* ═══════════════════════════════════════════════════════════

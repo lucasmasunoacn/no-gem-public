@@ -31,6 +31,7 @@
       <button class="nav-pill" onclick="toggleDrop('more-nav-drop')" title="More pages" aria-label="More">⋯</button>
       <div class="ndrop-panel" id="more-nav-panel">
         <button class="ndrop-opt" onclick="navTo('wiki');toggleDrop('more-nav-drop')"><i class="ni ni-wiki" aria-hidden="true"></i> Wiki</button>
+        <button class="ndrop-opt" onclick="navTo('articles');toggleDrop('more-nav-drop')"><i class="ni ni-wiki" aria-hidden="true"></i> Articles</button>
         <button class="ndrop-opt" onclick="navTo('channels');toggleDrop('more-nav-drop')"><i class="ni ni-channels" aria-hidden="true"></i> Channels</button>
         <button class="ndrop-opt" onclick="navTo('repos');toggleDrop('more-nav-drop')"><i class="ni ni-repos" aria-hidden="true"></i> Repos</button>
         <hr class="ndrop-sep">
@@ -189,6 +190,25 @@
       <button class="save-btn" onclick="showWikiMultiPrompt('quiz')">✏️ Quiz prompt</button>
       <button class="save-btn" onclick="showWikiMultiPrompt('vocab')">📖 Vocab prompt</button>
       <button class="refresh-btn" onclick="toggleWikiSelect()">✕ Cancel</button>
+    </div>
+  </section>
+
+  <!-- ── ARTICLES (topic categories + generated articles) ───────────────── -->
+  <section class="page" id="page-articles" data-mob-panel="articles">
+    <div class="page-hd">
+      <div class="page-title">Articles</div>
+      <button class="save-btn" onclick="scoutCategories()" title="Ask the scout for new topic categories now">🧭 候補を探す</button>
+      <button class="refresh-btn" onclick="showArticleFromUrl()" title="Write an article about any URL">📝 URLから書く</button>
+    </div>
+
+    <div class="tab-bar" role="tablist">
+      <button class="tab-btn active" data-atab="categories" onclick="setATab(this,'categories')">カテゴリ</button>
+      <button class="tab-btn" data-atab="articles" onclick="setATab(this,'articles')">記事</button>
+    </div>
+
+    <div class="tab-content">
+      <div id="a-categories" class="feed-box"></div>
+      <div id="a-articles" class="feed-box hidden"></div>
     </div>
   </section>
 
@@ -625,6 +645,7 @@
 
     <!-- Primary secondary pages -->
     <button class="mob-more-opt" onclick="navTo('wiki');closeMoreSheet()"><i class="ni ni-wiki" aria-hidden="true"></i> Wiki</button>
+    <button class="mob-more-opt" onclick="navTo('articles');closeMoreSheet()"><i class="ni ni-wiki" aria-hidden="true"></i> Articles</button>
     <button class="mob-more-opt" onclick="navTo('channels');closeMoreSheet()"><i class="ni ni-channels" aria-hidden="true"></i> Channels</button>
     <button class="mob-more-opt" onclick="navTo('repos');closeMoreSheet()"><i class="ni ni-repos" aria-hidden="true"></i> Repos</button>
 
